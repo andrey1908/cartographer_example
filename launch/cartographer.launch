@@ -18,12 +18,15 @@
 
     <!-- Arguments -->
     
-    
+    <!-- dim - 2d or 3d -->
+    <arg name="dim" default="3d"/>
+    <arg if="$(eval dim == '2d')" name="config_file" value="config_2d.lua"/>
+    <arg if="$(eval dim == '3d')" name="config_file" value="config_3d.lua"/>
     
     <!-- Cartographer -->
     <node pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" ns="cartographer" args="
             -configuration_directory $(find cartographer_example)/config
-            -configuration_basename config_2d.lua"
+            -configuration_basename $(arg config_file)"
             output="screen">
         <remap from="scan" to="/scan"/>
         <remap from="echoes" to="/horizontal_laser_3d"/>
