@@ -24,13 +24,21 @@
     <arg if="$(eval dim == '3d')" name="config_file" value="config_3d.lua"/>
     
     <!-- bag_filenames - bag files to process -->
-    <arg name="bag_filenames" default="/home/cds-jetson-host/catkin_ws/5th_floor+5.25_imu_compressed_2021-06-20-06-21-47.bag"/>
+    <arg name="bag_filenames"/>
+    
+    <!-- urdf_filenames - robot model files -->
+    <arg name="urdf_filenames" default=""/>
+    
+    <!-- save_state_filename - where to save the map -->
+    <arg name="save_state_filename" default=""/>
 
     <!-- Cartographer -->
-    <node pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" ns="cartographer" args="
+    <node pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" ns="cartographer_offline" args="
             -configuration_directory $(find cartographer_example)/config
-            -configuration_basename $(arg config_file)
-            -bag_filenames $(arg bag_filenames)"
+            -configuration_basenames $(arg config_file)
+            -urdf_filenames $(arg urdf_filenames)
+            -bag_filenames $(arg bag_filenames)
+            -save_state_filename $(arg save_state_filename)"
             output="screen">
         <remap from="scan" to="/scan"/>
         <remap from="echoes" to="/horizontal_laser_3d"/>
