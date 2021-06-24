@@ -1,0 +1,11 @@
+<robot name="SDBCS_Husky">
+
+    <link name="isns_link"/>
+    <link name="hdl32"/>
+
+    <joint name="hdl32_link" type="fixed">
+        <parent link="isns_link" />
+        <child link="hdl32" />
+        <origin xyz="-0.281 0.041 0.455" rpy="-0.006 -0.017 -0.013" />
+    </joint>
+</robot> 
