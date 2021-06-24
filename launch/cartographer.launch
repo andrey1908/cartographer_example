@@ -16,12 +16,17 @@
 
 <launch>
 
+    
+
     <!-- Arguments -->
     
     <!-- dim - 2d or 3d -->
     <arg name="dim" default="3d"/>
     <arg if="$(eval dim == '2d')" name="config_file" value="config_2d.lua"/>
     <arg if="$(eval dim == '3d')" name="config_file" value="config_3d.lua"/>
+    
+    <!-- urdf_filename - robot model file -->
+    <arg name="urdf_filename" default=""/>
     
     <!-- Cartographer -->
     <node pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" ns="cartographer" args="
@@ -37,5 +42,8 @@
     </node>
 
     <node pkg="cartographer_ros" type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" ns="cartographer" args="-resolution 0.05"/>
+    
+    <param unless="$(eval urdf_filename == '')" name="robot_description" textfile="$(arg urdf_filename)"/>
+    <node  unless="$(eval urdf_filename == '')" pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" ns="cartographer"/>
       
 </launch>
