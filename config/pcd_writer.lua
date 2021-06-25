@@ -19,7 +19,7 @@
 -- of a pixel in a X-Ray.
 
 options = {
-  tracking_frame = "base_link",
+  tracking_frame = "realsense_back_imu_optical_frame",
   pipeline = {
     {
       action = "min_max_range_filter",
