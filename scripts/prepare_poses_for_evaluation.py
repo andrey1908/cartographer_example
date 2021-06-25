@@ -11,11 +11,11 @@ from transforms3d.quaternions import quat2mat
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-bag-gt', '--rosbag-gt-file', required=True, type=str, help=".bag file that was used for SLAM")
-    parser.add_argument('-gt-topic', '--gt-topic', required=True, type=str, help="topic to read gt odometry")
+    parser.add_argument('-bag-gt', '--rosbag-gt-file', required=True, type=str, help=".bag file with gt poses")
+    parser.add_argument('-gt-topic', '--gt-topic', required=True, type=str, help="topic to read gt poses")
 
-    parser.add_argument('-bag-res', '--rosbag-results-file', required=True, type=str, help=".bag file with trajectory")
-    parser.add_argument('-res-topic', '--results-topic', required=True, type=str, help="topic to read trajectory")
+    parser.add_argument('-bag-res', '--rosbag-results-file', required=True, type=str, help=".bag file with SLAM trajectory")
+    parser.add_argument('-res-topic', '--results-topic', required=True, type=str, help="topic to read SLAM trajectory")
 
     parser.add_argument('-out-gt', '--out-gt-file', required=True, type=str, help="output file with gt poses in kitti format")
     parser.add_argument('-out-res', '--out-results-file', required=True, type=str, help="output file with SLAM poses in kitti format")
