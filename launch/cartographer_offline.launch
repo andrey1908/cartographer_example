@@ -27,12 +27,12 @@
     <arg name="bag_filenames"/>
     
     <!-- urdf_filenames - robot model files -->
-    <arg name="urdf_filenames" default=""/>
+    <arg name="urdf_filenames" default="''"/>
     
     <!-- save_state_filename - where to save the map -->
-    <arg name="save_state_filename" default=""/>
+    <arg name="save_state_filename" default="''"/>
 
-    <!-- Cartographer -->
+    <!-- Cartographer offline -->
     <node pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" ns="cartographer_offline" args="
             -configuration_directory $(find cartographer_example)/config
             -configuration_basenames $(arg config_file)
@@ -48,9 +48,5 @@
         <remap from="points2_2" to="/vertical_laser_3d" />
         <remap from="odom" to="/atlans_odom"/>
     </node>
-  
-    <!--
-    <node pkg="cartographer_ros" type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" ns="cartographer" args="-resolution 0.05"/>
-    -->
-  
+
 </launch>
