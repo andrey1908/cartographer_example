@@ -11,14 +11,14 @@ from transforms3d.quaternions import quat2mat
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-bag-gt', '--rosbag-gt-file', required=True, type=str)
-    parser.add_argument('-gt-topic', '--gt-topic', required=True, type=str)
+    parser.add_argument('-bag-gt', '--rosbag-gt-file', required=True, type=str, help=".bag file that was used for SLAM")
+    parser.add_argument('-gt-topic', '--gt-topic', required=True, type=str, help="topic to read gt odometry")
 
-    parser.add_argument('-bag-res', '--rosbag-results-file', required=True, type=str)
-    parser.add_argument('-res-topic', '--results-topic', required=True, type=str)
+    parser.add_argument('-bag-res', '--rosbag-results-file', required=True, type=str, help=".bag file with trajectory")
+    parser.add_argument('-res-topic', '--results-topic', required=True, type=str, help="topic to read trajectory")
 
-    parser.add_argument('-out-gt', '--out-gt-file', required=True, type=str)
-    parser.add_argument('-out-res', '--out-results-file', required=True, type=str)
+    parser.add_argument('-out-gt', '--out-gt-file', required=True, type=str, help="output file with gt poses in kitti format")
+    parser.add_argument('-out-res', '--out-results-file', required=True, type=str, help="output file with SLAM poses in kitti format")
     return parser
 
 
@@ -60,7 +60,7 @@ def prepare_poses_for_evaluation(rosbag_gt_file, gt_topic, rosbag_results_file, 
     print("Loading bags...")
     bag_gt = rosbag.Bag(rosbag_gt_file)
     bag_results = rosbag.Bag(rosbag_results_file)
-    print("Loaded bags")
+    print("Bags loaded")
 
     gt_timestamps = list()
     gt_messages = list()
