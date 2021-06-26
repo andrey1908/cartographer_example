@@ -43,12 +43,16 @@ options = {
   landmarks_sampling_ratio = 1.,
 }
 
-TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
-
 MAP_BUILDER.use_trajectory_builder_3d = true
+TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
+TRAJECTORY_BUILDER_3D.min_range = 1.
+MAX_3D_RANGE = 120.
+TRAJECTORY_BUILDER_3D.max_range = MAX_3D_RANGE
+TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
+
 MAP_BUILDER.num_background_threads = 7
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
-POSE_GRAPH.optimize_every_n_nodes = 320
+POSE_GRAPH.optimize_every_n_nodes = 90
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.03
 POSE_GRAPH.optimization_problem.ceres_solver_options.max_num_iterations = 10
 POSE_GRAPH.constraint_builder.min_score = 0.62
