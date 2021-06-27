@@ -40,13 +40,8 @@
             -bag_filenames $(arg bag_filenames)
             -save_state_filename $(arg save_state_filename)"
             output="screen">
-        <remap from="scan" to="/scan"/>
-        <remap from="echoes" to="/horizontal_laser_3d"/>
         <remap from="imu" to="/realsense_back/imu"/>
         <remap from="points2" to="/velodyne_points" />
-        <remap from="points2_1" to="/horizontal_laser_3d" />
-        <remap from="points2_2" to="/vertical_laser_3d" />
-        <remap from="odom" to="/atlans_odom"/>
     </node>
 
 </launch>
