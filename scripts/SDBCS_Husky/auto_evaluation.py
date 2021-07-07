@@ -1,6 +1,8 @@
 import subprocess
+import signal
 import os
 import argparse
+import time
 
 
 def build_parser():
@@ -9,9 +11,16 @@ def build_parser():
     parser.add_argument('-out-test-fld', '--out-test-folder', required=True, type=str)
     parser.add_argument('-urdf-fld', '--urdf-folder', required=True, type=str)
     parser.add_argument('-val-fld', '--validation-folder', required=True, type=str)
+
     parser.add_argument('-urdf-v', '--urdf-version', type=int, default=1, choices=[1, 2, 3])
     parser.add_argument('-imu', '--imu-sensor', type=str, default='xsens', choices=['xsens', 'atlans'])
+    parser.add_argument('-dim', '--dimensions', type=str, default='3d', choices=['3d', '2d'])
+    parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'])
     parser.add_argument('-bags-to-use', '--rosbag-numbers-to-use', type=int, nargs='+')
+
+    parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9)
+    parser.add_argument('--max-time-error', type=float, default=0.01)
+    parser.add_argument('--max-time-step', type=float, default=0.7)
     return parser
 
 
@@ -50,8 +59,9 @@ def get_urdf_filename(urdf_folder, bag, urdf_version):
     return urdf_filename
 
 
-def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder, validation_folder, \
-                                   urdf_version=1, imu_sensor='xsens', rosbag_numbers_to_use=None):
+def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder, validation_folder, urdf_version=1, \
+                                   imu_sensor='xsens', dimensions='3d', node_to_use='offline', rosbag_numbers_to_use=None, \
+                                   max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
     make_dirs(out_test_folder, validation_folder)
     bags = get_rosbag_filenames(rosbags_folder, rosbag_numbers_to_use=rosbag_numbers_to_use)
     imu_frame = {'xsens': 'imu', 'atlans': 'isns_link'}[imu_sensor]
@@ -63,16 +73,34 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
         rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, bag))
         out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(bag[:2])))
 
-        command = "roslaunch cartographer_example cartographer_offline.launch    bag_filenames:={}    urdf_filenames:={}    \
-save_state_filename:={}".format(rosbag_filename, get_urdf_filename(urdf_folder, bag, urdf_version), out_pbstream_filename)
+        if node_to_use == 'online':
+            command = "roslaunch cartographer_example cartographer.launch    urdf_filename:={}    \
+dim:={}    publish_occupancy_grid:=false".format(get_urdf_filename(urdf_folder, bag, urdf_version), dimensions)
+        elif node_to_use == 'offline':
+            command = "roslaunch cartographer_example cartographer_offline.launch    bag_filenames:={}    urdf_filenames:={}    \
+save_state_filename:={}    dim:={}".format(rosbag_filename, get_urdf_filename(urdf_folder, bag, urdf_version), out_pbstream_filename, dimensions)
+        else:
+            raise(RuntimeError)
         log += command + '\n\n\n'
         print('\n\n\n' + command + '\n')
         process = subprocess.Popen(command.split())
+        if node_to_use == 'online':
+            time.sleep(3)
+            command = "rosbag play --clock {}".format(rosbag_filename)
+            rosbag_play = subprocess.Popen(command.split())
+            rosbag_play.communicate()
+            assert(rosbag_play.returncode == 0)
+            time.sleep(1)
+            command = "rosservice call /cartographer/write_state {} true".format(out_pbstream_filename)
+            write_state = subprocess.Popen(command.split())
+            write_state.communicate()
+            assert(write_state.returncode == 0)
+            process.terminate()
         process.communicate()
         assert(process.returncode == 0)
 
 
-    # Retrive SLAM trajectories from cartographer maps
+    # Retrieve SLAM trajectories from cartographer maps
     for bag in bags:
         pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(bag[:2])))
         out_trajectory_bag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(bag[:2])))
@@ -96,8 +124,10 @@ save_state_filename:={}".format(rosbag_filename, get_urdf_filename(urdf_folder, 
 
         command = "python /home/cds-jetson-host/catkin_ws/src/ros_utils/scripts/prepare_poses_for_evaluation.py    \
 -gt-bag {}    -gt-topic /atlans_odom    -res-bag {}    -res-topic trajectory_0    -transforms-source {}    \
--out-gt {}    -out-res {}    -out-paths {}".format(rosbag_filename, results_poses_bag_filename, \
-            get_urdf_filename(urdf_folder, bag, urdf_version), out_gt_poses_filename, out_results_poses_filename, out_trajectory_bag_filename)
+-out-gt {}    -out-res {}    -out-paths {}    --max-union-intersection-time-difference {}    --max-time-error {}    \
+--max-time-step {}".format(rosbag_filename, results_poses_bag_filename, get_urdf_filename(urdf_folder, bag, urdf_version), \
+            out_gt_poses_filename, out_results_poses_filename, out_trajectory_bag_filename, \
+            max_union_intersection_time_difference, max_time_error, max_time_step)
         log += command + '\n\n\n'
         print('\n\n\n' + command + '\n')
         process = subprocess.Popen(command.split())
