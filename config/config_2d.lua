@@ -45,9 +45,16 @@ options = {
 
 MAP_BUILDER.use_trajectory_builder_2d = true
 TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
-TRAJECTORY_BUILDER_2D.min_range = 0.
+
+TRAJECTORY_BUILDER_2D.min_range = 1.
 TRAJECTORY_BUILDER_2D.max_range = 120.
-TRAJECTORY_BUILDER_2D.min_z = -0.8
-TRAJECTORY_BUILDER_2D.max_z = 2.
+TRAJECTORY_BUILDER_2D.min_z = -0.4
+TRAJECTORY_BUILDER_2D.max_z = 1.
+
+TRAJECTORY_BUILDER_2D.motion_filter.max_time_seconds = 0.5
+TRAJECTORY_BUILDER_2D.motion_filter.max_distance_meters = 0.1
+TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = 0.004
+
+--POSE_GRAPH.optimize_every_n_nodes = 0
 
 return options
