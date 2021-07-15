@@ -16,8 +16,6 @@
 
 <launch>
 
-    
-
     <!-- Arguments -->
     
     <!-- dim - 2d or 3d -->
@@ -34,6 +32,9 @@
     <!-- load_state_filename - where to load the map from -->
     <arg name="load_state_filename" default="''"/>
     
+    <!-- load_frozen_state - freeze loaded map or not -->
+    <arg name="load_frozen_state" default="true"/>
+    
     <!-- publish_occupancy_grid - where to use occupancy grid node -->
     <arg name="publish_occupancy_grid" default="true"/>
     
@@ -42,7 +43,8 @@
             -configuration_directory $(find cartographer_example)/config
             -configuration_basename $(arg config_file)
             -save_state_filename $(arg save_state_filename)
-            -load_state_filename $(arg load_state_filename)"
+            -load_state_filename $(arg load_state_filename)
+            -load_frozen_state=$(arg load_frozen_state)"
             output="screen">
         <remap from="imu" to="/realsense_back/imu"/>
         <remap from="points2" to="/velodyne_points" />
