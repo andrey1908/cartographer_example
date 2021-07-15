@@ -18,7 +18,7 @@ def get_pbstream_filenames(pbstream_folder):
     return pbstream_filenames
 
 
-def auto_evaluation_grid_extraction(pbstream_folder, out_folder):
+def auto_occupancy_grid_extraction(pbstream_folder, out_folder):
     os.makedirs(out_folder, exist_ok=True)
     pbstreams = get_pbstream_filenames(pbstream_folder)
     topic = '/save_occupancy_grid'
@@ -45,4 +45,4 @@ def auto_evaluation_grid_extraction(pbstream_folder, out_folder):
 if __name__ == '__main__':
     parser = build_parser()
     args = parser.parse_args()
-    auto_evaluation_grid_extraction(**vars(args))
+    auto_occupancy_grid_extraction(**vars(args))
