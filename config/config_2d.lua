@@ -24,7 +24,8 @@ options = {
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
-  use_pose_extrapolator = true,
+  publish_tracked_pose = true,
+  use_pose_extrapolator = false,
   use_odometry = false,
   use_nav_sat = false,
   use_landmarks = false,
@@ -46,15 +47,45 @@ options = {
 MAP_BUILDER.use_trajectory_builder_2d = true
 TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
 
+-- Range filter --
 TRAJECTORY_BUILDER_2D.min_range = 1.
-TRAJECTORY_BUILDER_2D.max_range = 120.
+MAX_2D_RANGE = 120.
+TRAJECTORY_BUILDER_2D.max_range = MAX_2D_RANGE
+TRAJECTORY_BUILDER_2D.adaptive_voxel_filter.max_range = MAX_2D_RANGE
+TRAJECTORY_BUILDER_2D.loop_closure_adaptive_voxel_filter.max_range = MAX_2D_RANGE
 TRAJECTORY_BUILDER_2D.min_z = -0.4
 TRAJECTORY_BUILDER_2D.max_z = 1.
 
+-- Voxel filter --
+TRAJECTORY_BUILDER_2D.voxel_filter_size = 0.15
+TRAJECTORY_BUILDER_2D.adaptive_voxel_filter.max_length = 2.
+TRAJECTORY_BUILDER_2D.loop_closure_adaptive_voxel_filter.max_length = 2.
+
+-- Motion filter --
 TRAJECTORY_BUILDER_2D.motion_filter.max_time_seconds = 0.5
 TRAJECTORY_BUILDER_2D.motion_filter.max_distance_meters = 0.1
 TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = 0.004
 
---POSE_GRAPH.optimize_every_n_nodes = 0
+-- Local SLAM --
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.translation_weight = 3.  -- '5.' shows bad results on 18 track
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 40.  -- '4e2' is worse than this
+
+-- Global SLAM --
+MAP_BUILDER.num_background_threads = 4
+POSE_GRAPH.optimize_every_n_nodes = 90
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
+POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
+
+-- Logs --
+POSE_GRAPH.log_residual_histograms = false
+POSE_GRAPH.constraint_builder.log_matches = false
+POSE_GRAPH.optimization_problem.log_solver_summary = false
+
+-- Localization mode --
+--[[
+TRAJECTORY_BUILDER.pure_localization_trimmer = {
+  max_submaps_to_keep = 3,
+}
+--]]
 
 return options

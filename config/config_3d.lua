@@ -24,7 +24,8 @@ options = {
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
-  use_pose_extrapolator = true,
+  publish_tracked_pose = true,
+  use_pose_extrapolator = false,
   use_odometry = false,
   use_nav_sat = false,
   use_landmarks = false,
@@ -45,18 +46,35 @@ options = {
 
 MAP_BUILDER.use_trajectory_builder_3d = true
 TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
+
+-- Range filter --
 TRAJECTORY_BUILDER_3D.min_range = 1.
 MAX_3D_RANGE = 120.
 TRAJECTORY_BUILDER_3D.max_range = MAX_3D_RANGE
 TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
 
-MAP_BUILDER.num_background_threads = 7
+-- Global SLAM --
+MAP_BUILDER.num_background_threads = 4
+POSE_GRAPH.optimize_every_n_nodes = 90
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.03
 POSE_GRAPH.optimization_problem.ceres_solver_options.max_num_iterations = 10
-POSE_GRAPH.constraint_builder.min_score = 0.62
-POSE_GRAPH.constraint_builder.global_localization_min_score = 0.66
+POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
---POSE_GRAPH.optimize_every_n_nodes = 0
+-- Logs --
+POSE_GRAPH.log_residual_histograms = false
+POSE_GRAPH.constraint_builder.log_matches = false
+POSE_GRAPH.optimization_problem.log_solver_summary = false
+
+-- Localization mode --
+--[[
+TRAJECTORY_BUILDER.pure_localization_trimmer = {
+  max_submaps_to_keep = 3,
+}
+POSE_GRAPH.optimize_every_n_nodes = 30
+TRAJECTORY_BUILDER_3D.submaps.num_range_data = 30
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
+POSE_GRAPH.global_sampling_ratio = 0.01
+--]]
 
 return options
