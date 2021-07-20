@@ -40,7 +40,7 @@
             -bag_filenames $(arg bag_filenames)
             -save_state_filename $(arg save_state_filename)"
             output="screen">
-        <remap from="imu" to="/realsense_back/imu"/>
+        <remap from="imu" to="/xsens/imu/data"/>
         <remap from="points2" to="/velodyne_points" />
     </node>
 

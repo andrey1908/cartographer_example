@@ -46,7 +46,7 @@
             -load_state_filename $(arg load_state_filename)
             -load_frozen_state=$(arg load_frozen_state)"
             output="screen">
-        <remap from="imu" to="/realsense_back/imu"/>
+        <remap from="imu" to="/xsens/imu/data"/>
         <remap from="points2" to="/velodyne_points" />
     </node>
 

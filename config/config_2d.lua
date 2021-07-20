@@ -19,8 +19,8 @@ options = {
   map_builder = MAP_BUILDER,
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
-  tracking_frame = "realsense_back_imu_optical_frame",
-  published_frame = "base_link",
+  tracking_frame = "imu",
+  published_frame = "isns_link",
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
@@ -72,8 +72,9 @@ TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 40.  -- '4e2' is wors
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
-POSE_GRAPH.optimize_every_n_nodes = 90
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
+POSE_GRAPH.optimize_every_n_nodes = 50
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.03  -- 0.3 does not improve metrics
+--POSE_GRAPH.optimization_problem.huber_scale = 5e2  -- has no effect
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
 -- Logs --

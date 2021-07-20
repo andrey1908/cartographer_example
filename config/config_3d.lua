@@ -19,8 +19,8 @@ options = {
   map_builder = MAP_BUILDER,
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
-  tracking_frame = "realsense_back_imu_optical_frame",
-  published_frame = "base_link",
+  tracking_frame = "imu",
+  published_frame = "isns_link",
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
@@ -55,10 +55,9 @@ TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RA
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
-POSE_GRAPH.optimize_every_n_nodes = 90
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
+POSE_GRAPH.optimize_every_n_nodes = 50
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.03
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
-POSE_GRAPH.optimization_problem.ceres_solver_options.max_num_iterations = 10
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
 -- Logs --
