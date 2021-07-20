@@ -17,6 +17,7 @@ def build_parser():
     parser.add_argument('-urdf', '--urdf-file', type=str)
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Which launch file to use: cartographer.launch or cartographer_offline.launch.")
+    parser.add_argument('-wlc', '--with-loop-closure', action='store_true')
     parser.add_argument('--test-name', type=str, default='test')
 
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
@@ -31,7 +32,7 @@ def make_dirs(out_test_folder, validation_folder):
     os.makedirs(os.path.join(validation_folder, 'results'), exist_ok=True)
 
 
-def run_cartographer(rosbag_filename, out_pbstream_filename, urdf_filename='\"\"', dimension='3d', node_to_use='online', print_command=False):
+def run_cartographer(rosbag_filename, out_pbstream_filename, urdf_filename='\"\"', dimension='3d', node_to_use='online', with_loop_closure=False, print_command=False):
     if node_to_use == 'online':
         command = "roslaunch cartographer_example cartographer.launch    urdf_filename:={}    \
 dim:={}    publish_occupancy_grid:=false".format(urdf_filename, dimension)
@@ -43,6 +44,7 @@ save_state_filename:={}    dim:={}".format(rosbag_filename, urdf_filename, out_p
     if print_command:
         print('\n\n\n' + command + '\n')
     process = subprocess.Popen(command.split())
+    
     if node_to_use == 'online':
         time.sleep(3)
         rosbag_play_command = "rosbag play --clock {}".format(rosbag_filename)
@@ -50,11 +52,28 @@ save_state_filename:={}    dim:={}".format(rosbag_filename, urdf_filename, out_p
         rosbag_play.communicate()
         assert(rosbag_play.returncode == 0)
         time.sleep(1)
+        
+        if with_loop_closure:
+            finish_trajectory_command = "rosservice call /cartographer/finish_trajectory 0"
+            finish_trajectory = subprocess.Popen(finish_trajectory_command.split())
+            finish_trajectory.communicate()
+            assert(finish_trajectory.returncode == 0)
+            
+            trajectory_state = 0
+            while trajectory_state == 0:
+                get_trajectory_states_command = "rosservice call /cartographer/get_trajectory_states"
+                trajectory_states = subprocess.check_output(get_trajectory_states_command.split()).decode()
+                idx = trajectory_states.find('trajectory_state:')
+                idx += trajectory_states[idx:].find('[')
+                trajectory_state = int(trajectory_states[idx+1:idx+2])
+            time.sleep(1)
+                
         write_state_command = "rosservice call /cartographer/write_state {} true".format(out_pbstream_filename)
         write_state = subprocess.Popen(write_state_command.split())
         write_state.communicate()
         assert(write_state.returncode == 0)
         process.terminate()
+        
     process.communicate()
     assert(process.returncode == 0)
     return command
@@ -106,7 +125,7 @@ def run_evaluation(validation_folder, projection='xy', print_command=False):
 
 
 def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder, validation_folder, imu_frame, \
-                    urdf_file=None, dimension='3d', node_to_use='online', test_name='test', \
+                    urdf_file=None, dimension='3d', node_to_use='online', with_loop_closure=False, test_name='test', \
                     max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
     make_dirs(out_test_folder, validation_folder)
     log = str()
@@ -116,7 +135,7 @@ def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder,
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
     urdf_filename = os.path.abspath(urdf_file) if urdf_file else '\'\''
     command = run_cartographer(test_rosbag_filename, out_pbstream_filename, urdf_filename=urdf_filename, \
-                               dimension=dimension, node_to_use=node_to_use, print_command=True)
+                               dimension=dimension, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
     log += command + '\n\n\n'
     
     # Retrieve SLAM trajectories from cartographer map

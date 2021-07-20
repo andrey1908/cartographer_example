@@ -16,6 +16,7 @@ def build_parser():
     parser.add_argument('-imu', '--imu-sensor', type=str, default='xsens', choices=['xsens', 'atlans'], help="Imu that is used in launch file for running cartographer.")
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Which launch file to use: cartographer.launch or cartographer_offline.launch.")
+    parser.add_argument('-wlc', '--with-loop-closure', action='store_true')
     parser.add_argument('-bags-to-use', '--rosbag-numbers-to-use', type=int, nargs='+', help="Rosbag files to validate on. If empty, all rosbag files will be used.")
 
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
@@ -60,7 +61,7 @@ def get_urdf_filename(urdf_folder, rosbag_file, urdf_version):
 
 
 def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder, validation_folder, urdf_version=1, \
-                                   imu_sensor='xsens', dimension='3d', node_to_use='online', rosbag_numbers_to_use=None, \
+                                   imu_sensor='xsens', dimension='3d', node_to_use='online', with_loop_closure=False, rosbag_numbers_to_use=None, \
                                    max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
     make_dirs(out_test_folder, validation_folder)
     rosbag_files = get_rosbag_filenames(rosbags_folder, rosbag_numbers_to_use=rosbag_numbers_to_use)
@@ -73,7 +74,7 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
         out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
         urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
         command = run_cartographer(rosbag_filename, out_pbstream_filename, urdf_filename=urdf_filename, \
-                                   dimension=dimension, node_to_use=node_to_use, print_command=True)
+                                   dimension=dimension, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
         log += command + '\n\n\n'
 
     # Retrieve SLAM trajectories from cartographer maps
