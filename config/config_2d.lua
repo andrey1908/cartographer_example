@@ -60,6 +60,8 @@ TRAJECTORY_BUILDER_2D.max_z = 1.
 TRAJECTORY_BUILDER_2D.voxel_filter_size = 0.15
 TRAJECTORY_BUILDER_2D.adaptive_voxel_filter.max_length = 2.
 TRAJECTORY_BUILDER_2D.loop_closure_adaptive_voxel_filter.max_length = 2.
+POSE_GRAPH.constraint_builder.min_score = 0.4
+--POSE_GRAPH.constraint_builder.global_localization_min_score = 0.45
 
 -- Motion filter --
 TRAJECTORY_BUILDER_2D.motion_filter.max_time_seconds = 0.5
@@ -73,8 +75,8 @@ TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 40.  -- '4e2' is wors
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
 POSE_GRAPH.optimize_every_n_nodes = 50
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.03  -- 0.3 does not improve metrics
---POSE_GRAPH.optimization_problem.huber_scale = 5e2  -- has no effect
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.02
+--POSE_GRAPH.optimization_problem.huber_scale = 5e2
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
 -- Logs --
