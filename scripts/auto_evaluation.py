@@ -14,6 +14,7 @@ def build_parser():
     parser.add_argument('-val-fld', '--validation-folder', required=True, type=str)
     parser.add_argument('--imu-frame', required=True, type=str)
 
+    parser.add_argument('-robot', '--robot-name', type=str, default='default', choices=['default', 'sdbcs_husky', 'sweeper'])
     parser.add_argument('-urdf', '--urdf-file', type=str)
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Which launch file to use: cartographer.launch or cartographer_offline.launch.")
@@ -32,10 +33,13 @@ def make_dirs(out_test_folder, validation_folder):
     os.makedirs(os.path.join(validation_folder, 'results'), exist_ok=True)
 
 
-def run_cartographer(rosbag_filename, out_pbstream_filename, urdf_filename='\"\"', dimension='3d', node_to_use='online', with_loop_closure=False, print_command=False):
+def run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='default', urdf_filename='\"\"', dimension='3d', \
+                     node_to_use='online', with_loop_closure=False, print_command=False):
+    if node_to_use == 'offline':
+        raise(NotImplementedError('Launch file for offline node is out of date.'))
     if node_to_use == 'online':
-        command = "roslaunch cartographer_example cartographer.launch    urdf_filename:={}    \
-dim:={}    publish_occupancy_grid:=false".format(urdf_filename, dimension)
+        command = "roslaunch cartographer_example cartographer.launch   robot:={}    urdf_filename:={}    \
+dim:={}    publish_occupancy_grid:=false".format(robot_name, urdf_filename, dimension)
     elif node_to_use == 'offline':
         command = "roslaunch cartographer_example cartographer_offline.launch    bag_filenames:={}    urdf_filenames:={}    \
 save_state_filename:={}    dim:={}".format(rosbag_filename, urdf_filename, out_pbstream_filename, dimension)

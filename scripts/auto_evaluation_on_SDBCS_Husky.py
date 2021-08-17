@@ -73,7 +73,7 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
         rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, rosbag_file))
         out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
         urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
-        command = run_cartographer(rosbag_filename, out_pbstream_filename, urdf_filename=urdf_filename, \
+        command = run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='sdbcs_husky', urdf_filename=urdf_filename, \
                                    dimension=dimension, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
         log += command + '\n\n\n'
 

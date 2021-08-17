@@ -18,25 +18,36 @@
 
     <!-- Arguments -->
     
+    <!-- robot - robot name -->
+    <arg name="robot" default="default" />
+    
     <!-- dim - 2d or 3d -->
-    <arg name="dim" default="3d"/>
-    <arg if="$(eval dim == '2d')" name="config_file" value="config_2d.lua"/>
-    <arg if="$(eval dim == '3d')" name="config_file" value="config_3d.lua"/>
+    <arg name="dim" default="3d" />
+    <!-- default robot settings -->
+    <arg if="$(eval robot == 'default' and dim == '2d')" name="config_file" value="config_2d.lua" />
+    <arg if="$(eval robot == 'default' and dim == '3d')" name="config_file" value="config_3d.lua" />
+    <!-- SDBCS_Husky settings -->
+    <arg if="$(eval robot == 'sdbcs_husky' and dim == '2d')" name="config_file" value="sdbcs_husky_2d.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky' and dim == '3d')" name="config_file" value="sdbcs_husky_3d.lua" />
+    <!-- sweeper settings -->
+    <arg if="$(eval robot == 'sweeper' and dim == '2d')" name="config_file" value="sweeper_2d.lua" />
+    <arg if="$(eval robot == 'sweeper' and dim == '3d')" name="config_file" value="sweeper_3d.lua" />
+    <include if="$(eval robot == 'sweeper')" file="$(find cartographer_example)/launch/sweeper_tf_calibration.launch" />
     
     <!-- urdf_filename - robot model file -->
-    <arg name="urdf_filename" default="''"/>
+    <arg name="urdf_filename" default="''" />
     
     <!-- save_state_filename - where to save the map -->
-    <arg name="save_state_filename" default="''"/>
+    <arg name="save_state_filename" default="''" />
     
     <!-- load_state_filename - where to load the map from -->
-    <arg name="load_state_filename" default="''"/>
+    <arg name="load_state_filename" default="''" />
     
     <!-- load_frozen_state - freeze loaded map or not -->
-    <arg name="load_frozen_state" default="true"/>
+    <arg name="load_frozen_state" default="true" />
     
-    <!-- publish_occupancy_grid - where to use occupancy grid node -->
-    <arg name="publish_occupancy_grid" default="true"/>
+    <!-- publish_occupancy_grid - whether to use occupancy grid node -->
+    <arg name="publish_occupancy_grid" default="true" />
     
     <!-- Cartographer -->
     <node pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" ns="cartographer" args="
@@ -46,13 +57,22 @@
             -load_state_filename $(arg load_state_filename)
             -load_frozen_state=$(arg load_frozen_state)"
             output="screen">
-        <remap from="imu" to="/xsens/imu/data"/>
-        <remap from="points2" to="/velodyne_points" />
+        <!-- default robot topics -->
+        <remap if="$(eval robot == 'default')" from="imu" to="/xsens/imu/data" />
+        <remap if="$(eval robot == 'default')" from="points2" to="/velodyne_points" />
+        <!-- SDBCS_Husky topics -->
+        <remap if="$(eval robot == 'sdbcs_husky')" from="imu" to="/xsens/imu/data" />
+        <remap if="$(eval robot == 'sdbcs_husky')" from="points2" to="/velodyne_points" />
+        <!-- sweeper topics -->
+        <remap if="$(eval robot == 'sweeper')" from="imu" to="/xsens/imu/data" />
+        <remap if="$(eval robot == 'sweeper')" from="points2_1" to="/aufd/left/os_cloud_node/points" />
+        <remap if="$(eval robot == 'sweeper')" from="points2_2" to="/aufd/central/os_cloud_node/points" />
+        <remap if="$(eval robot == 'sweeper')" from="points2_3" to="/aufd/right/os_cloud_node/points" />
     </node>
 
-    <node if="$(arg publish_occupancy_grid)" pkg="cartographer_ros" type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" ns="cartographer" args="-resolution 0.05"/>
+    <node if="$(arg publish_occupancy_grid)" pkg="cartographer_ros" type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" ns="cartographer" args="-resolution 0.05" />
     
-    <param unless="$(eval urdf_filename == '\'\'')" name="robot_description" textfile="$(arg urdf_filename)"/>
-    <node  unless="$(eval urdf_filename == '\'\'')" pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" ns="cartographer"/>
+    <param unless="$(eval urdf_filename == '\'\'')" name="robot_description" textfile="$(arg urdf_filename)" />
+    <node  unless="$(eval urdf_filename == '\'\'')" pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" ns="cartographer" />
     
 </launch>
