@@ -44,44 +44,46 @@ options = {
   landmarks_sampling_ratio = 1.,
 }
 
-MAP_BUILDER.use_trajectory_builder_3d = true
-TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
+MAP_BUILDER.use_trajectory_builder_2d = true
+TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
 
 -- Range filter --
-TRAJECTORY_BUILDER_3D.min_range = 1.
-MAX_3D_RANGE = 120.
-TRAJECTORY_BUILDER_3D.max_range = MAX_3D_RANGE
-TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
+TRAJECTORY_BUILDER_2D.min_range = 1.
+MAX_2D_RANGE = 120.
+TRAJECTORY_BUILDER_2D.max_range = MAX_2D_RANGE
+TRAJECTORY_BUILDER_2D.adaptive_voxel_filter.max_range = MAX_2D_RANGE
+TRAJECTORY_BUILDER_2D.loop_closure_adaptive_voxel_filter.max_range = MAX_2D_RANGE
+TRAJECTORY_BUILDER_2D.min_z = -0.4
+TRAJECTORY_BUILDER_2D.max_z = 1.
 
 -- Voxel filter --
-TRAJECTORY_BUILDER_3D.voxel_filter_size = 0.15
-TRAJECTORY_BUILDER_3D.high_resolution_adaptive_voxel_filter.max_length = 2.
-TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_length = 4.
+TRAJECTORY_BUILDER_2D.voxel_filter_size = 0.15
+TRAJECTORY_BUILDER_2D.adaptive_voxel_filter.max_length = 2.
+TRAJECTORY_BUILDER_2D.loop_closure_adaptive_voxel_filter.max_length = 2.
 
 -- Motion filter --
-TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.5
-TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.1
-TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = 0.004
+TRAJECTORY_BUILDER_2D.motion_filter.max_time_seconds = 0.5
+TRAJECTORY_BUILDER_2D.motion_filter.max_distance_meters = 0.1
+TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = 0.004
 
 -- Submaps --
-TRAJECTORY_BUILDER_3D.submaps.high_resolution = 0.10
-TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.45
+TRAJECTORY_BUILDER_2D.submaps.grid_options_2d.resolution = 0.10
 
 -- Local SLAM --
-TRAJECTORY_BUILDER_3D.ceres_scan_matcher.translation_weight = 5.
-TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 4e2
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.translation_weight = 3.  -- '5.' shows bad results on track 18
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 40.  -- '4e2' is worse than this
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
-POSE_GRAPH.optimize_every_n_nodes = 90
+POSE_GRAPH.optimize_every_n_nodes = 50
 
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.03
-POSE_GRAPH.constraint_builder.min_score = 0.55
+POSE_GRAPH.constraint_builder.min_score = 0.4
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
 
 -- Optimization problem --
-POSE_GRAPH.optimization_problem.huber_scale = 5e2
+POSE_GRAPH.optimization_problem.huber_scale = 1e1
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
 -- Logs --
@@ -97,10 +99,6 @@ POSE_GRAPH.optimization_problem.log_solver_summary = false
 TRAJECTORY_BUILDER.pure_localization_trimmer = {
   max_submaps_to_keep = 3,
 }
-POSE_GRAPH.optimize_every_n_nodes = 30
-TRAJECTORY_BUILDER_3D.submaps.num_range_data = 30
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
-POSE_GRAPH.global_sampling_ratio = 0.01
 --]]
 
 return options

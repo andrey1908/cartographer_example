@@ -1,0 +1,43 @@
+<launch>
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_local_map"
+        args="408411.9248012433527 6198325.040603396483 181.090772640708451
+              0 0 0 1 
+        map local_map"/> -->
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_local_map"
+    args="413539.6879030476 6188778.702986666 144.79174442096513
+        -0.0009082831675186753 0.011831101030111313 -0.6018963456153871 0.7984859347343446 
+    map local_map"/>
+         -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="isns_link_to_base_link"
+        args="0 0 0
+            0 0 0 1
+            base_link isns_link"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_lidar_central"
+        args="0.8 0.0 0.278
+            0 0 0 1
+            base_link os64central/sensor"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="central_to_left_lidar"
+        args="-0.03891412541270256 0.30511754751205444 0.0
+            -0.349448025226593 -8.719127799849957e-05 -0.0012993533164262772 0.9369553327560425
+            os64central/sensor os32left/sensor"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="central_to_right_lidar"
+        args="-0.047736845910549164 -0.2733137011528015 -0.014568030834197998
+        0.36560115218162537 -9.979873721022159e-05 -0.0002613161050248891 0.9307717084884644
+        os64central/sensor os32right/sensor"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="central_lidar_to_central_imu" 
+        args="0.006253 -0.011.775 0.007645 
+            0 0 0 
+            os64central/sensor os64central/imu" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="left_lidar_to_left_imu" 
+        args="0.006253 -0.011.775 0.007645 
+            0 0 0 
+            os32left/sensor os32left/imu" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="right_lidar_to_right_imu"
+        args="0.006253 -0.011.775 0.007645
+            0 0 0 
+            os32right/sensor os32right/imu" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_hunter_odom"
+        args="0.06 0 -0.565 
+            0 0 0  
+            base_link hunter_odom" />
+</launch>

@@ -73,7 +73,7 @@ TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 4e2
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
-POSE_GRAPH.optimize_every_n_nodes = 90
+POSE_GRAPH.optimize_every_n_nodes = 50
 
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.03

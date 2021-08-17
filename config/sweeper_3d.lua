@@ -19,8 +19,8 @@ options = {
   map_builder = MAP_BUILDER,
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
-  tracking_frame = "imu",
-  published_frame = "isns_link",
+  tracking_frame = "isns_link",
+  published_frame = "base_link",
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
@@ -32,7 +32,7 @@ options = {
   num_laser_scans = 0,
   num_multi_echo_laser_scans = 0,
   num_subdivisions_per_laser_scan = 1,
-  num_point_clouds = 1,
+  num_point_clouds = 3,
   lookup_transform_timeout_sec = 0.2,
   submap_publish_period_sec = 0.3,
   pose_publish_period_sec = 5e-3,
@@ -45,7 +45,7 @@ options = {
 }
 
 MAP_BUILDER.use_trajectory_builder_3d = true
-TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
+TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 3
 
 -- Range filter --
 TRAJECTORY_BUILDER_3D.min_range = 1.
@@ -85,10 +85,7 @@ POSE_GRAPH.optimization_problem.huber_scale = 5e2
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
 -- Logs --
-TRAJECTORY_BUILDER.log_data_frequency = false
-TRAJECTORY_BUILDER_2D.motion_filter.log_number_of_nodes_after_reduction = false
 POSE_GRAPH.log_residual_histograms = false
-POSE_GRAPH.constraint_builder.log_constraints = false
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
 
