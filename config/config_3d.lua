@@ -76,6 +76,7 @@ MAP_BUILDER.num_background_threads = 4
 POSE_GRAPH.optimize_every_n_nodes = 90
 
 -- Constraint builder --
+POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.03
 POSE_GRAPH.constraint_builder.min_score = 0.55
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
