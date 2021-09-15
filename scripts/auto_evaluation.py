@@ -15,8 +15,8 @@ def build_parser():
     parser.add_argument('--imu-frame', required=True, type=str)
 
     parser.add_argument('-robot', '--robot-name', type=str, default='default', choices=['default', 'sdbcs_husky', 'sweeper'])
-    parser.add_argument('-urdf', '--urdf-file', type=str)
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
+    parser.add_argument('-urdf', '--urdf-file', type=str)
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Which launch file to use: cartographer.launch or cartographer_offline.launch.")
     parser.add_argument('-wlc', '--with-loop-closure', action='store_true')
     parser.add_argument('--test-name', type=str, default='test')
@@ -33,7 +33,7 @@ def make_dirs(out_test_folder, validation_folder):
     os.makedirs(os.path.join(validation_folder, 'results'), exist_ok=True)
 
 
-def run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='default', urdf_filename='\"\"', dimension='3d', \
+def run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='default', dimension='3d', urdf_filename='\"\"', \
                      node_to_use='online', with_loop_closure=False, print_command=False):
     if node_to_use == 'offline':
         raise(NotImplementedError('Launch file for offline node is out of date.'))
@@ -138,8 +138,8 @@ def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder,
     test_rosbag_filename = os.path.abspath(test_rosbag_file)
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
     urdf_filename = os.path.abspath(urdf_file) if urdf_file else '\'\''
-    command = run_cartographer(test_rosbag_filename, out_pbstream_filename, urdf_filename=urdf_filename, \
-                               dimension=dimension, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
+    command = run_cartographer(test_rosbag_filename, out_pbstream_filename, dimension=dimension, \
+                               urdf_filename=urdf_filename, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
     log += command + '\n\n\n'
     
     # Retrieve SLAM trajectories from cartographer map
