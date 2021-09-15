@@ -76,6 +76,7 @@ MAP_BUILDER.num_background_threads = 4
 POSE_GRAPH.optimize_every_n_nodes = 90
 
 -- Constraint builder --
+POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.03
 POSE_GRAPH.constraint_builder.min_score = 0.55
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
@@ -85,7 +86,10 @@ POSE_GRAPH.optimization_problem.huber_scale = 5e2
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 
 -- Logs --
+TRAJECTORY_BUILDER.log_data_frequency = false
+TRAJECTORY_BUILDER_3D.motion_filter.log_number_of_nodes_after_reduction = false
 POSE_GRAPH.log_residual_histograms = false
+POSE_GRAPH.constraint_builder.log_constraints = false
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
 
