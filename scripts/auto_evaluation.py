@@ -128,8 +128,8 @@ def run_evaluation(validation_folder, projection='xy', print_command=False):
     return command
 
 
-def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder, validation_folder, imu_frame, \
-                    urdf_file=None, dimension='3d', node_to_use='online', with_loop_closure=False, test_name='test', \
+def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder, validation_folder, imu_frame, robot_name='default', \
+                    dimension='3d', urdf_file=None, node_to_use='online', with_loop_closure=False, test_name='test', \
                     max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
     make_dirs(out_test_folder, validation_folder)
     log = str()
@@ -138,7 +138,7 @@ def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder,
     test_rosbag_filename = os.path.abspath(test_rosbag_file)
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
     urdf_filename = os.path.abspath(urdf_file) if urdf_file else '\'\''
-    command = run_cartographer(test_rosbag_filename, out_pbstream_filename, dimension=dimension, \
+    command = run_cartographer(test_rosbag_filename, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
                                urdf_filename=urdf_filename, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
     log += command + '\n\n\n'
     
