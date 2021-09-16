@@ -67,6 +67,7 @@ TRAJECTORY_BUILDER_2D.motion_filter.max_distance_meters = 0.1
 TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = 0.004
 
 -- Submaps --
+TRAJECTORY_BUILDER_2D.submaps.num_range_data = 90
 TRAJECTORY_BUILDER_2D.submaps.grid_options_2d.resolution = 0.10
 
 -- Local SLAM --
@@ -90,6 +91,7 @@ POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 -- Logs --
 TRAJECTORY_BUILDER.log_data_frequency = false
 TRAJECTORY_BUILDER_2D.motion_filter.log_number_of_nodes_after_reduction = false
+POSE_GRAPH.log_work_queue_size = false
 POSE_GRAPH.log_residual_histograms = false
 POSE_GRAPH.constraint_builder.log_constraints = false
 POSE_GRAPH.constraint_builder.log_matches = false
