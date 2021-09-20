@@ -23,16 +23,25 @@
     
     <!-- dim - 2d or 3d -->
     <arg name="dim" default="3d" />
+    
     <!-- default robot settings -->
     <arg if="$(eval robot == 'default' and dim == '2d')" name="config_file" value="config_2d.lua" />
     <arg if="$(eval robot == 'default' and dim == '3d')" name="config_file" value="config_3d.lua" />
     <!-- SDBCS_Husky settings -->
     <arg if="$(eval robot == 'sdbcs_husky' and dim == '2d')" name="config_file" value="sdbcs_husky_2d.lua" />
     <arg if="$(eval robot == 'sdbcs_husky' and dim == '3d')" name="config_file" value="sdbcs_husky_3d.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky_atlans_imu' and dim == '2d')" name="config_file" value="sdbcs_husky_2d_atlans_imu.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky_atlans_imu' and dim == '3d')" name="config_file" value="sdbcs_husky_3d_atlans_imu.lua" />
     <!-- sweeper settings -->
-    <arg if="$(eval robot == 'sweeper' and dim == '2d')" name="config_file" value="sweeper_2d.lua" />
-    <arg if="$(eval robot == 'sweeper' and dim == '3d')" name="config_file" value="sweeper_3d.lua" />
-    <include if="$(eval robot == 'sweeper')" file="$(find cartographer_example)/launch/sweeper_tf_calibration.launch" />
+    <arg if="$(eval robot == 'sweeper' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d.lua" />
+    <arg if="$(eval robot == 'sweeper' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d.lua" />
+    <arg if="$(eval robot == 'sweeper_left_imu' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d_left_imu.lua" />
+    <arg if="$(eval robot == 'sweeper_left_imu' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d_left_imu.lua" />
+    <arg if="$(eval robot == 'sweeper_central_imu' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d_central_imu.lua" />
+    <arg if="$(eval robot == 'sweeper_central_imu' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d_central_imu.lua" />
+    <arg if="$(eval robot == 'sweeper_right_imu' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d_right_imu.lua" />
+    <arg if="$(eval robot == 'sweeper_right_imu' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d_right_imu.lua" />
+    <include if="$(eval robot.startswith('sweeper'))" file="$(find cartographer_example)/launch/sweeper/sweeper_tf_calibration.launch" />
     
     <!-- urdf_filename - robot model file -->
     <arg name="urdf_filename" default="''" />
@@ -62,14 +71,18 @@
         <remap if="$(eval robot == 'default')" from="points2" to="/velodyne_points" />
         <!-- SDBCS_Husky topics -->
         <remap if="$(eval robot == 'sdbcs_husky')" from="imu" to="/xsens/imu/data" />
-        <remap if="$(eval robot == 'sdbcs_husky')" from="points2" to="/velodyne_points" />
+        <remap if="$(eval robot == 'sdbcs_husky_atlans_imu')" from="imu" to="/atlans_imu" />
+        <remap if="$(eval robot.startswith('sdbcs_husky'))" from="points2" to="/velodyne_points" />
         <!-- sweeper topics -->
         <remap if="$(eval robot == 'sweeper')" from="imu" to="/xsens/imu/data" />
-        <remap if="$(eval robot == 'sweeper')" from="points2_1" to="/aufd/left/os_cloud_node/points" />
-        <remap if="$(eval robot == 'sweeper')" from="points2_2" to="/aufd/central/os_cloud_node/points" />
-        <remap if="$(eval robot == 'sweeper')" from="points2_3" to="/aufd/right/os_cloud_node/points" />
+        <remap if="$(eval robot == 'sweeper_left_imu')" from="imu" to="/aufd/left/os_cloud_node/imu" />
+        <remap if="$(eval robot == 'sweeper_central_imu')" from="imu" to="/aufd/central/os_cloud_node/imu" />
+        <remap if="$(eval robot == 'sweeper_right_imu')" from="imu" to="/aufd/right/os_cloud_node/imu" />
+        <remap if="$(eval robot.startswith('sweeper'))" from="points2_1" to="/aufd/left/os_cloud_node/points" />
+        <remap if="$(eval robot.startswith('sweeper'))" from="points2_2" to="/aufd/central/os_cloud_node/points" />
+        <remap if="$(eval robot.startswith('sweeper'))" from="points2_3" to="/aufd/right/os_cloud_node/points" />
     </node>
-
+    
     <node if="$(arg publish_occupancy_grid)" pkg="cartographer_ros" type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" ns="cartographer" args="-resolution 0.05" />
     
     <param unless="$(eval urdf_filename == '\'\'')" name="robot_description" textfile="$(arg urdf_filename)" />
