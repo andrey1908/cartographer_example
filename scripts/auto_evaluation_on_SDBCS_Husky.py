@@ -2,7 +2,7 @@ import subprocess
 import os
 import argparse
 import time
-from auto_evaluation import run_cartographer, retrieve_SLAM_trajectory, prepare_poses_for_evaluation, run_evaluation
+from auto_evaluation import run_cartographer, extract_SLAM_trajectory, prepare_poses_for_evaluation, run_evaluation
 
 
 def build_parser():
@@ -77,11 +77,11 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
                                    urdf_filename=urdf_filename, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
         log += command + '\n\n\n'
 
-    # Retrieve SLAM trajectories from cartographer maps
+    # Extract SLAM trajectories from cartographer maps
     for rosbag_file in rosbag_files:
         pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
         out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(rosbag_file[:2])))
-        command = retrieve_SLAM_trajectory(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
+        command = extract_SLAM_trajectory(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
         log += command + '\n\n\n'
 
     # Prepare poses in kitti format for evaluation
