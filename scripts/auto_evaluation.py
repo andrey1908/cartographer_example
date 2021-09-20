@@ -1,5 +1,7 @@
+import rospy
+import roslaunch
+import rospkg
 import subprocess
-import signal
 import os
 import argparse
 import time
@@ -21,9 +23,15 @@ def build_parser():
     parser.add_argument('-wlc', '--with-loop-closure', action='store_true')
     parser.add_argument('--test-name', type=str, default='test')
 
+    parser.add_argument('-transforms-source', '--transforms-source-file', type=str, help=".bag or .urdf file to read static transforms from if needed")
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
     parser.add_argument('--max-time-error', type=float, default=0.01, help="Max time error during matching gt and SLAM poses.")
     parser.add_argument('--max-time-step', type=float, default=0.7, help="Max time step in gt and SLAM poses after matching.")
+
+    parser.add_argument('--skip-running-cartographer', action='store_true')
+    parser.add_argument('--skip-trajectory-extraction', action='store_true')
+    parser.add_argument('--skip-poses-preparation', action='store_true')
+    parser.add_argument('--skip-evaluation', action='store_true')
     return parser
 
 
@@ -37,18 +45,25 @@ def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='defaul
                      node_to_use='online', with_loop_closure=False, print_command=False):
     if not isinstance(rosbag_filenames, list):
         rosbag_filenames = [rosbag_filenames]
+    if node_to_use not in ['online', 'offline']:
+        raise RuntimeError()
     if node_to_use == 'offline':
-        raise(NotImplementedError('Launch file for offline node is out of date.'))
+        raise NotImplementedError('Launch file for offline node is out of date.')
+
+    rospack = rospkg.RosPack()
+    cartographer_example_path = rospack.get_path('cartographer_example')
     if node_to_use == 'online':
-        command = "roslaunch cartographer_example cartographer.launch   robot:={}    dim:={}    \
-urdf_filename:={}    publish_occupancy_grid:=false".format(robot_name, dimension, urdf_filename)
-    else:
-        raise(RuntimeError)
-    if print_command:
-        print('\n\n\n' + command + '\n')
-    process = subprocess.Popen(command.split())
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        cli_args = [os.path.join(cartographer_example_path, 'launch/cartographer.launch'),
+            'robot:={}'.format(robot_name), 'dim:={}'.format(dimension), 'urdf_filename:={}'.format(urdf_filename)]
+        roslaunch_args = cli_args[1:]
+        roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
+        cartographer = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
+        cartographer.start()
     
     if node_to_use == 'online':
+        rospy.wait_for_service('/cartographer/write_state')
         time.sleep(3)
         rosbag_play_command = "rosbag play --clock {}".format(' '.join(rosbag_filenames))
         rosbag_play = subprocess.Popen(rosbag_play_command.split())
@@ -75,11 +90,9 @@ urdf_filename:={}    publish_occupancy_grid:=false".format(robot_name, dimension
         write_state = subprocess.Popen(write_state_command.split())
         write_state.communicate()
         assert(write_state.returncode == 0)
-        process.terminate()
+        cartographer.shutdown()
         
-    process.communicate()
-    assert(process.returncode == 0)
-    return command
+    return "launch cartographer"
 
 
 def extract_SLAM_trajectory(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=False):
@@ -129,7 +142,8 @@ def run_evaluation(validation_folder, projection='xy', print_command=False):
 
 def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folder, validation_folder, imu_frame, robot_name='default', \
                     dimension='3d', urdf_file=None, node_to_use='online', with_loop_closure=False, test_name='test', \
-                    max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
+                    transforms_source_file=None, max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
+                    skip_running_cartographer=False, skip_trajectory_extraction=False, skip_poses_preparation=False, skip_evaluation=False):
     make_dirs(out_test_folder, validation_folder)
     log = str()
 
@@ -137,32 +151,37 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
     test_rosbag_filenames = list(map(os.path.abspath, test_rosbag_files))
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
     urdf_filename = os.path.abspath(urdf_file) if urdf_file else '\'\''
-    command = run_cartographer(test_rosbag_filenames, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
-                               urdf_filename=urdf_filename, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
-    log += command + '\n\n\n'
+    if not skip_running_cartographer:
+        command = run_cartographer(test_rosbag_filenames, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
+                                urdf_filename=urdf_filename, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
+        log += command + '\n\n\n'
     
     # Extract SLAM trajectories from cartographer map
     out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(test_name)))
-    command = extract_SLAM_trajectory(out_pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
-    log += command + '\n\n\n'
+    if not skip_trajectory_extraction:
+        command = extract_SLAM_trajectory(out_pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
+        log += command + '\n\n\n'
 
     # Prepare poses in kitti format for evaluation
     gt_rosbag_filenames = list(map(os.path.abspath, gt_rosbag_files))
-    transforms_source_filename = urdf_filename if urdf_file else test_rosbag_filenames[0]
+    transforms_source_filename = urdf_filename if urdf_file else \
+        os.path.abspath(transforms_source_file) if transforms_source_file else test_rosbag_filenames[0]
     out_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', '{}.txt'.format(test_name)))
     out_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', '{}.txt'.format(test_name)))
     out_trajectories_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}_trajectories.bag'.format(test_name)))
-    command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'trajectory_0', \
-                                           out_gt_poses_filename, out_results_poses_filename, \
-                                           transforms_source_filename, out_trajectories_rosbag_filename, \
-                                           max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                                           max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
-    log += command + '\n\n\n'
+    if not skip_poses_preparation:
+        command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'trajectory_0', \
+                                            out_gt_poses_filename, out_results_poses_filename, \
+                                            transforms_source_filename, out_trajectories_rosbag_filename, \
+                                            max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                                            max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
+        log += command + '\n\n\n'
     
     # Run evaluation
-    for projection in ['xy', 'xz', 'yz']:
-        command = run_evaluation(validation_folder, projection=projection, print_command=True)
-        log += command + '\n\n\n'
+    if not skip_evaluation:
+        for projection in ['xy', 'xz', 'yz']:
+            command = run_evaluation(validation_folder, projection=projection, print_command=True)
+            log += command + '\n\n\n'
     
     print(log)
 
