@@ -7,8 +7,8 @@ import time
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-test-bag', '--test-rosbag-file', required=True, type=str)
-    parser.add_argument('-gt-bag', '--gt-rosbag-file', required=True, type=str, help=".bag file with gt poses")
+    parser.add_argument('-test-bags', '--test-rosbag-files', required=True, type=str, nargs='+', help=".bag files to test on")
+    parser.add_argument('-gt-bags', '--gt-rosbag-files', required=True, type=str, nargs='+', help=".bag files with gt poses")
     parser.add_argument('-gt-topic', '--gt-topic', required=True, type=str, help="topic to read gt poses")
     parser.add_argument('-out-test-fld', '--out-test-folder', required=True, type=str)
     parser.add_argument('-val-fld', '--validation-folder', required=True, type=str)
@@ -33,16 +33,15 @@ def make_dirs(out_test_folder, validation_folder):
     os.makedirs(os.path.join(validation_folder, 'results'), exist_ok=True)
 
 
-def run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='default', dimension='3d', urdf_filename='\"\"', \
+def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='default', dimension='3d', urdf_filename='\"\"', \
                      node_to_use='online', with_loop_closure=False, print_command=False):
+    if not isinstance(rosbag_filenames, list):
+        rosbag_filenames = [rosbag_filenames]
     if node_to_use == 'offline':
         raise(NotImplementedError('Launch file for offline node is out of date.'))
     if node_to_use == 'online':
-        command = "roslaunch cartographer_example cartographer.launch   robot:={}    urdf_filename:={}    \
-dim:={}    publish_occupancy_grid:=false".format(robot_name, urdf_filename, dimension)
-    elif node_to_use == 'offline':
-        command = "roslaunch cartographer_example cartographer_offline.launch    bag_filenames:={}    urdf_filenames:={}    \
-save_state_filename:={}    dim:={}".format(rosbag_filename, urdf_filename, out_pbstream_filename, dimension)
+        command = "roslaunch cartographer_example cartographer.launch   robot:={}    dim:={}    \
+urdf_filename:={}    publish_occupancy_grid:=false".format(robot_name, dimension, urdf_filename)
     else:
         raise(RuntimeError)
     if print_command:
@@ -51,7 +50,7 @@ save_state_filename:={}    dim:={}".format(rosbag_filename, urdf_filename, out_p
     
     if node_to_use == 'online':
         time.sleep(3)
-        rosbag_play_command = "rosbag play --clock {}".format(rosbag_filename)
+        rosbag_play_command = "rosbag play --clock {}".format(' '.join(rosbag_filenames))
         rosbag_play = subprocess.Popen(rosbag_play_command.split())
         rosbag_play.communicate()
         assert(rosbag_play.returncode == 0)
@@ -83,7 +82,7 @@ save_state_filename:={}    dim:={}".format(rosbag_filename, urdf_filename, out_p
     return command
 
 
-def retrieve_SLAM_trajectory(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=False):
+def extract_SLAM_trajectory(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=False):
     command = "rosrun cartographer_ros cartographer_dev_pbstream_trajectories_to_rosbag    -input {}    -output {}    \
 -tracking_frame {}".format(pbstream_filename, out_results_rosbag_filename, imu_frame)
     if print_command:
@@ -94,14 +93,14 @@ def retrieve_SLAM_trajectory(pbstream_filename, out_results_rosbag_filename, imu
     return command
 
 
-def prepare_poses_for_evaluation(gt_rosbag_filename, gt_topic, results_rosbag_filename, results_topic, \
+def prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, results_rosbag_filename, results_topic, \
                                  out_gt_poses_filename, out_results_poses_filename, transforms_source_filename='\'\'', \
                                  out_trajectories_rosbag_filename='\'\'', max_union_intersection_time_difference=0.9, \
                                  max_time_error=0.01, max_time_step=0.7, print_command=False):
     command = "python /home/cds-jetson-host/catkin_ws/src/ros_utils/scripts/prepare_poses_for_evaluation.py    \
--gt-bag {}    -gt-topic {}    -res-bag {}    -res-topic {}     -out-gt {}    -out-res {}    \
+-gt-bags {}    -gt-topic {}    -res-bag {}    -res-topic {}     -out-gt {}    -out-res {}    \
 -transforms-source {}    -out-trajectories {}    --max-union-intersection-time-difference {}    --max-time-error {}    \
---max-time-step {}".format(gt_rosbag_filename, gt_topic, results_rosbag_filename, results_topic, out_gt_poses_filename, out_results_poses_filename, \
+--max-time-step {}".format(' '.join(gt_rosbag_filenames), gt_topic, results_rosbag_filename, results_topic, out_gt_poses_filename, out_results_poses_filename, \
                            transforms_source_filename, out_trajectories_rosbag_filename, \
                            max_union_intersection_time_difference, max_time_error, max_time_step)
     if print_command:
@@ -128,32 +127,32 @@ def run_evaluation(validation_folder, projection='xy', print_command=False):
     return command
 
 
-def auto_evaluation(test_rosbag_file, gt_rosbag_file, gt_topic, out_test_folder, validation_folder, imu_frame, robot_name='default', \
+def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folder, validation_folder, imu_frame, robot_name='default', \
                     dimension='3d', urdf_file=None, node_to_use='online', with_loop_closure=False, test_name='test', \
                     max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
     make_dirs(out_test_folder, validation_folder)
     log = str()
 
     # Run cartographer to generate a map
-    test_rosbag_filename = os.path.abspath(test_rosbag_file)
+    test_rosbag_filenames = list(map(os.path.abspath, test_rosbag_files))
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
     urdf_filename = os.path.abspath(urdf_file) if urdf_file else '\'\''
-    command = run_cartographer(test_rosbag_filename, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
+    command = run_cartographer(test_rosbag_filenames, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
                                urdf_filename=urdf_filename, node_to_use=node_to_use, with_loop_closure=with_loop_closure, print_command=True)
     log += command + '\n\n\n'
     
-    # Retrieve SLAM trajectories from cartographer map
+    # Extract SLAM trajectories from cartographer map
     out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(test_name)))
-    command = retrieve_SLAM_trajectory(out_pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
+    command = extract_SLAM_trajectory(out_pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
     log += command + '\n\n\n'
 
     # Prepare poses in kitti format for evaluation
-    gt_rosbag_filename = os.path.abspath(gt_rosbag_file)
-    transforms_source_filename = urdf_filename if urdf_file else test_rosbag_filename
+    gt_rosbag_filenames = list(map(os.path.abspath, gt_rosbag_files))
+    transforms_source_filename = urdf_filename if urdf_file else test_rosbag_filenames[0]
     out_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', '{}.txt'.format(test_name)))
     out_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', '{}.txt'.format(test_name)))
     out_trajectories_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}_trajectories.bag'.format(test_name)))
-    command = prepare_poses_for_evaluation(gt_rosbag_filename, gt_topic, out_results_rosbag_filename, 'trajectory_0', \
+    command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'trajectory_0', \
                                            out_gt_poses_filename, out_results_poses_filename, \
                                            transforms_source_filename, out_trajectories_rosbag_filename, \
                                            max_union_intersection_time_difference=max_union_intersection_time_difference, \
