@@ -40,7 +40,7 @@ def make_dirs(out_test_folder, validation_folder):
 
 def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='default', dimension='3d', urdf_filename='\"\"', \
                      node_to_use='online', print_command=False):
-    if not isinstance(rosbag_filenames, list):
+    if isinstance(rosbag_filenames, str):
         rosbag_filenames = [rosbag_filenames]
     if node_to_use not in ['online', 'offline']:
         raise RuntimeError()
@@ -99,15 +99,19 @@ def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, im
     return command
 
 
-def prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, results_rosbag_filename, results_topic, \
+def prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, results_rosbag_filenames, results_topic, \
                                  out_gt_poses_filename, out_results_poses_filename, transforms_source_filename='\'\'', \
                                  out_trajectories_rosbag_filename='\'\'', max_union_intersection_time_difference=0.9, \
                                  max_time_error=0.01, max_time_step=0.7, print_command=False):
+    if isinstance(gt_rosbag_filenames, str):
+        gt_rosbag_filenames = [gt_rosbag_filenames]
+    if isinstance(results_rosbag_filenames, str):
+        results_rosbag_filenames = [results_rosbag_filenames]
     command = "rosrun ros_utils prepare_poses_for_evaluation.py    \
 -gt-bags {}    -gt-topic {}    -res-bag {}    -res-topic {}     -out-gt {}    -out-res {}    \
 -transforms-source {}    -out-trajectories {}    --max-union-intersection-time-difference {}    --max-time-error {}    \
---max-time-step {}".format(' '.join(gt_rosbag_filenames), gt_topic, results_rosbag_filename, results_topic, out_gt_poses_filename, out_results_poses_filename, \
-                           transforms_source_filename, out_trajectories_rosbag_filename, \
+--max-time-step {}".format(' '.join(gt_rosbag_filenames), gt_topic, ' '.join(results_rosbag_filenames), results_topic, out_gt_poses_filename, \
+                           out_results_poses_filename, transforms_source_filename, out_trajectories_rosbag_filename, \
                            max_union_intersection_time_difference, max_time_error, max_time_step)
     if print_command:
         print('\n\n\n' + command + '\n')
