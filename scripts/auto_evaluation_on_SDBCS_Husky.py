@@ -106,9 +106,6 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
 
     # Run evaluation
     for projection in ['xy', 'xz', 'yz']:
-        gt_poses_folder = os.path.abspath(os.path.join(validation_folder, 'gt'))
-        results_poses_folder = os.path.abspath(os.path.join(validation_folder, 'results'))
-        out_folder = os.path.abspath(os.path.join(validation_folder, 'output_{}'.format(projection)))
         command = run_evaluation(validation_folder, projection=projection, print_command=True)
         log += command + '\n\n\n'
     
