@@ -14,6 +14,6 @@
 
 include "sweeper/sweeper_3d_base.lua"
 
-options.tracking_frame = "isns_link"
+options.tracking_frame = "base_link"
 
 return options
