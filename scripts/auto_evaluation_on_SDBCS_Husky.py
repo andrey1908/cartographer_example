@@ -19,6 +19,11 @@ def build_parser():
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
     parser.add_argument('--max-time-error', type=float, default=0.01, help="Max time error during matching gt and SLAM poses.")
     parser.add_argument('--max-time-step', type=float, default=0.7, help="Max time step in gt and SLAM poses after matching.")
+
+    parser.add_argument('--skip-running-cartographer', action='store_true')
+    parser.add_argument('--skip-trajectory-extraction', action='store_true')
+    parser.add_argument('--skip-poses-preparation', action='store_true')
+    parser.add_argument('--skip-evaluation', action='store_true')
     return parser
 
 
@@ -59,55 +64,61 @@ def get_urdf_filename(urdf_folder, rosbag_file, urdf_version):
 
 def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder, validation_folder, urdf_version=1, \
                                    imu_sensor='xsens', dimension='3d', node_to_use='online', rosbag_numbers_to_use=None, \
-                                   max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7):
+                                   max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
+                                   skip_running_cartographer=False, skip_trajectory_extraction=False, \
+                                   skip_poses_preparation=False, skip_evaluation=False):
     make_dirs(out_test_folder, validation_folder)
     rosbag_files = get_rosbag_filenames(rosbags_folder, rosbag_numbers_to_use=rosbag_numbers_to_use)
     imu_frame = {'xsens': 'imu', 'atlans': 'isns_link'}[imu_sensor]
     log = str()
 
-    # Run cartographer to generate maps
-    for rosbag_file in rosbag_files:
-        rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, rosbag_file))
-        out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
-        urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
-        command = run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='sdbcs_husky', dimension=dimension, \
-                                   urdf_filename=urdf_filename, node_to_use=node_to_use, print_command=True)
-        log += command + '\n\n\n'
+    if not skip_running_cartographer:
+        # Run cartographer to generate maps
+        for rosbag_file in rosbag_files:
+            rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, rosbag_file))
+            out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
+            urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
+            command = run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='sdbcs_husky', dimension=dimension, \
+                                       urdf_filename=urdf_filename, node_to_use=node_to_use, print_command=True)
+            log += command + '\n\n\n'
 
-    # Extract SLAM trajectories from cartographer maps
-    for rosbag_file in rosbag_files:
-        pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
-        out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(rosbag_file[:2])))
-        command = extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
-        log += command + '\n\n\n'
+    if not skip_trajectory_extraction:
+        # Extract SLAM trajectories from cartographer maps
+        for rosbag_file in rosbag_files:
+            pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
+            out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(rosbag_file[:2])))
+            command = extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
+            log += command + '\n\n\n'
 
-    # Prepare poses in kitti format for evaluation
-    for rosbag_file in rosbag_files:
-        gt_rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, rosbag_file))
-        results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(rosbag_file[:2])))
-        urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
-        out_global_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', 'global_{}.txt'.format(rosbag_file[:2])))
-        out_global_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', 'global_{}.txt'.format(rosbag_file[:2])))
-        out_local_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', 'local_{}.txt'.format(rosbag_file[:2])))
-        out_local_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', 'local_{}.txt'.format(rosbag_file[:2])))
-        out_trajectories_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}_trajectories.bag'.format(rosbag_file[:2])))
-        command = prepare_poses_for_evaluation(gt_rosbag_filename, '/atlans_odom', results_rosbag_filename, 'global_trajectory_0', \
-                                               out_global_gt_poses_filename, out_global_results_poses_filename, \
-                                               urdf_filename, out_trajectories_rosbag_filename, \
-                                               max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                                               max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
-        log += command + '\n\n\n'
-        command = prepare_poses_for_evaluation(gt_rosbag_filename, '/atlans_odom', results_rosbag_filename, 'local_trajectory_0', \
-                                               out_local_gt_poses_filename, out_local_results_poses_filename, \
-                                               urdf_filename, out_trajectories_rosbag_filename, \
-                                               max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                                               max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
-        log += command + '\n\n\n'
+    if not skip_poses_preparation:
+        # Prepare poses in kitti format for evaluation
+        for rosbag_file in rosbag_files:
+            gt_rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, rosbag_file))
+            results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(rosbag_file[:2])))
+            urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
+            out_global_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', 'global_{}.txt'.format(rosbag_file[:2])))
+            out_global_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', 'global_{}.txt'.format(rosbag_file[:2])))
+            out_local_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', 'local_{}.txt'.format(rosbag_file[:2])))
+            out_local_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', 'local_{}.txt'.format(rosbag_file[:2])))
+            out_trajectories_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}_trajectories.bag'.format(rosbag_file[:2])))
+            command = prepare_poses_for_evaluation(gt_rosbag_filename, '/atlans_odom', results_rosbag_filename, 'global_trajectory_0', \
+                                                   out_global_gt_poses_filename, out_global_results_poses_filename, \
+                                                   urdf_filename, out_trajectories_rosbag_filename, \
+                                                   max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                                                   max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
+            log += command + '\n\n\n'
+            command = prepare_poses_for_evaluation(gt_rosbag_filename, '/atlans_odom', results_rosbag_filename, 'local_trajectory_0', \
+                                                   out_local_gt_poses_filename, out_local_results_poses_filename, \
+                                                   urdf_filename, out_trajectories_rosbag_filename, \
+                                                   max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                                                   max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
+            log += command + '\n\n\n'
 
-    # Run evaluation
-    for projection in ['xy', 'xz', 'yz']:
-        command = run_evaluation(validation_folder, projection=projection, print_command=True)
-        log += command + '\n\n\n'
+    if not skip_evaluation:
+        # Run evaluation
+        for projection in ['xy', 'xz', 'yz']:
+            command = run_evaluation(validation_folder, projection=projection, print_command=True)
+            log += command + '\n\n\n'
     
     print(log)
 
