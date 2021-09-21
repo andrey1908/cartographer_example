@@ -28,10 +28,10 @@
     <arg if="$(eval robot == 'default' and dim == '2d')" name="config_file" value="config_2d.lua" />
     <arg if="$(eval robot == 'default' and dim == '3d')" name="config_file" value="config_3d.lua" />
     <!-- SDBCS_Husky settings -->
-    <arg if="$(eval robot == 'sdbcs_husky' and dim == '2d')" name="config_file" value="sdbcs_husky_2d.lua" />
-    <arg if="$(eval robot == 'sdbcs_husky' and dim == '3d')" name="config_file" value="sdbcs_husky_3d.lua" />
-    <arg if="$(eval robot == 'sdbcs_husky_atlans_imu' and dim == '2d')" name="config_file" value="sdbcs_husky_2d_atlans_imu.lua" />
-    <arg if="$(eval robot == 'sdbcs_husky_atlans_imu' and dim == '3d')" name="config_file" value="sdbcs_husky_3d_atlans_imu.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky' and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky' and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky_atlans_imu' and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d_atlans_imu.lua" />
+    <arg if="$(eval robot == 'sdbcs_husky_atlans_imu' and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d_atlans_imu.lua" />
     <!-- sweeper settings -->
     <arg if="$(eval robot == 'sweeper' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d.lua" />
     <arg if="$(eval robot == 'sweeper' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d.lua" />
