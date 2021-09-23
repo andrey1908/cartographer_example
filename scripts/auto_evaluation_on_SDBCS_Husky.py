@@ -11,7 +11,7 @@ def build_parser():
     parser.add_argument('-val-fld', '--validation-folder', required=True, type=str, help="Folder to save kitti poses for evaluation.")
 
     parser.add_argument('-urdf-v', '--urdf-version', type=int, default=1, choices=[1, 2, 3], help="Version of calibraion.")
-    parser.add_argument('-imu', '--imu-sensor', type=str, default='xsens', choices=['xsens', 'atlans'], help="Imu that is used in launch file for running cartographer.")
+    parser.add_argument('-imu', '--imu-sensor', type=str, default='xsens', choices=['xsens', 'atlans'], help="What imu to use.")
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Which launch file to use: cartographer.launch or cartographer_offline.launch.")
     parser.add_argument('-bags-to-use', '--rosbag-numbers-to-use', type=int, nargs='+', help="Rosbag files to validate on. If empty, all rosbag files will be used.")
@@ -69,6 +69,7 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
                                    skip_poses_preparation=False, skip_evaluation=False):
     make_dirs(out_test_folder, validation_folder)
     rosbag_files = get_rosbag_filenames(rosbags_folder, rosbag_numbers_to_use=rosbag_numbers_to_use)
+    robot_name = {'xsens': 'sdbcs_husky', 'atlans': 'sdbcs_husky_atlans_imu'}[imu_sensor]
     imu_frame = {'xsens': 'imu', 'atlans': 'isns_link'}[imu_sensor]
     log = str()
 
@@ -78,7 +79,7 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, urdf_folder,
             rosbag_filename = os.path.abspath(os.path.join(rosbags_folder, rosbag_file))
             out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(rosbag_file[:2])))
             urdf_filename = get_urdf_filename(urdf_folder, rosbag_file, urdf_version)
-            command = run_cartographer(rosbag_filename, out_pbstream_filename, robot_name='sdbcs_husky', dimension=dimension, \
+            command = run_cartographer(rosbag_filename, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
                                        urdf_filename=urdf_filename, node_to_use=node_to_use, print_command=True)
             log += command + '\n\n\n'
 
