@@ -1,8 +1,10 @@
 import rospy
+import rospkg
 import subprocess
 import os
 import argparse
 import time
+import xml.etree.ElementTree as ET
 
 
 def build_parser():
@@ -12,15 +14,12 @@ def build_parser():
     parser.add_argument('-gt-topic', '--gt-topic', required=True, type=str, help="topic to read gt poses")
     parser.add_argument('-out-test-fld', '--out-test-folder', required=True, type=str)
     parser.add_argument('-val-fld', '--validation-folder', required=True, type=str)
-    parser.add_argument('--imu-frame', required=True, type=str)
 
     parser.add_argument('-robot', '--robot-name', type=str, default='default')
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
-    parser.add_argument('-urdf', '--urdf-file', type=str)
-    parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Which launch file to use: cartographer.launch or cartographer_offline.launch.")
+    parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Cartographer mode.")
     parser.add_argument('--test-name', type=str, default='test')
 
-    parser.add_argument('-transforms-source', '--transforms-source-file', type=str, help=".bag or .urdf file to read static transforms from if needed")
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
     parser.add_argument('--max-time-error', type=float, default=0.01, help="Max time error during matching gt and SLAM poses.")
     parser.add_argument('--max-time-step', type=float, default=0.7, help="Max time step in gt and SLAM poses after matching.")
@@ -38,7 +37,7 @@ def make_dirs(out_test_folder, validation_folder):
     os.makedirs(os.path.join(validation_folder, 'results'), exist_ok=True)
 
 
-def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='default', dimension='3d', urdf_filename='\"\"', \
+def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='default', dimension='3d', \
                      node_to_use='online', print_command=False):
     if isinstance(rosbag_filenames, str):
         rosbag_filenames = [rosbag_filenames]
@@ -49,7 +48,7 @@ def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='defaul
 
     if node_to_use == 'online':
         command = "roslaunch cartographer_example cartographer.launch   robot:={}    dim:={}    \
-urdf_filename:={}    publish_occupancy_grid:=false".format(robot_name, dimension, urdf_filename)
+publish_occupancy_grid:=false".format(robot_name, dimension)
     if print_command:
         print('\n\n\n' + command + '\n')
     process = subprocess.Popen(command.split())
@@ -88,7 +87,44 @@ urdf_filename:={}    publish_occupancy_grid:=false".format(robot_name, dimension
     return command
 
 
-def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=False):
+def robot_name_to_imu_frame(robot: str):
+    dim = '3d'  # imu frame does not depend on dim, but this variable is needed to evaluate expression in eval()
+    rospack = rospkg.RosPack()
+    cartographer_example_folder = rospack.get_path('cartographer_example')
+    tree = ET.parse(os.path.join(cartographer_example_folder, 'launch/cartographer.launch'))
+    root = tree.getroot()
+    for elem in root:
+        if elem.tag != 'arg':
+            continue
+        if elem.attrib['name'] != 'config_file':
+            continue
+        expression = elem.attrib.get('if')
+        if expression is None:
+            continue
+        expression = expression.replace('$(eval', '')
+        expression = expression[:expression.rfind(')')]
+        if not eval(expression):
+            continue
+        config_filename = os.path.join(cartographer_example_folder, 'config', elem.attrib['value'])
+        with open(config_filename, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            if line.find('options.tracking_frame') == -1:
+                continue
+            start_idx = line.find('=')
+            if start_idx == -1:
+                raise RuntimeError
+            start_idx += 1
+            end_idx = len(line) - 1
+            imu_frame = eval(line[start_idx:end_idx])
+            if not isinstance(imu_frame, str):
+                raise RuntimeError
+            return imu_frame
+    raise RuntimeError
+
+
+def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, robot_name='default', print_command=False):
+    imu_frame = robot_name_to_imu_frame(robot_name)
     command = "rosrun cartographer_ros pbstream_trajectories_to_rosbag    -input {}    -output {}    \
 -tracking_frame {}".format(pbstream_filename, out_results_rosbag_filename, imu_frame)
     if print_command:
@@ -99,14 +135,36 @@ def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, im
     return command
 
 
+def robot_name_to_transforms_source_filename(robot: str):
+    rospack = rospkg.RosPack()
+    cartographer_example_folder = rospack.get_path('cartographer_example')
+    tree = ET.parse(os.path.join(cartographer_example_folder, 'launch/cartographer.launch'))
+    root = tree.getroot()
+    for elem in root:
+        if elem.tag != 'include':
+            continue
+        expression = elem.attrib.get('if')
+        if expression is None:
+            continue
+        expression = expression.replace('$(eval', '')
+        expression = expression[:expression.rfind(')')]
+        if not eval(expression):
+            continue
+        transforms_source_file = elem.attrib['file'].replace('$(find cartographer_example)/', '')
+        transforms_source_filename = os.path.join(cartographer_example_folder, transforms_source_file)
+        return transforms_source_filename
+    raise RuntimeError
+
+
 def prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, results_rosbag_filenames, results_topic, \
-                                 out_gt_poses_filename, out_results_poses_filename, transforms_source_filename='\'\'', \
+                                 out_gt_poses_filename, out_results_poses_filename, robot_name='default', \
                                  out_trajectories_rosbag_filename='\'\'', max_union_intersection_time_difference=0.9, \
                                  max_time_error=0.01, max_time_step=0.7, print_command=False):
     if isinstance(gt_rosbag_filenames, str):
         gt_rosbag_filenames = [gt_rosbag_filenames]
     if isinstance(results_rosbag_filenames, str):
         results_rosbag_filenames = [results_rosbag_filenames]
+    transforms_source_filename = robot_name_to_transforms_source_filename(robot_name)
     command = "rosrun ros_utils prepare_poses_for_evaluation.py    \
 -gt-bags {}    -gt-topic {}    -res-bag {}    -res-topic {}     -out-gt {}    -out-res {}    \
 -transforms-source {}    -out-trajectories {}    --max-union-intersection-time-difference {}    --max-time-error {}    \
@@ -137,32 +195,33 @@ def run_evaluation(validation_folder, projection='xy', print_command=False):
     return command
 
 
-def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folder, validation_folder, imu_frame, robot_name='default', \
-                    dimension='3d', urdf_file=None, node_to_use='online', with_loop_closure=False, test_name='test', \
-                    transforms_source_file=None, max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
+def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folder, validation_folder, \
+                    robot_name='default', dimension='3d', node_to_use='online', test_name='test', \
+                    max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
                     skip_running_cartographer=False, skip_trajectory_extraction=False, skip_poses_preparation=False, skip_evaluation=False):
+    if isinstance(test_rosbag_files, str):
+        test_rosbag_files = [test_rosbag_files]
+    if isinstance(gt_rosbag_files, str):
+        gt_rosbag_files = [gt_rosbag_files]
     make_dirs(out_test_folder, validation_folder)
     log = str()
 
     # Run cartographer to generate a map
     test_rosbag_filenames = list(map(os.path.abspath, test_rosbag_files))
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
-    urdf_filename = os.path.abspath(urdf_file) if urdf_file else '\'\''
     if not skip_running_cartographer:
         command = run_cartographer(test_rosbag_filenames, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
-                                urdf_filename=urdf_filename, node_to_use=node_to_use, print_command=True)
+                                   node_to_use=node_to_use, print_command=True)
         log += command + '\n\n\n'
     
     # Extract SLAM trajectories from cartographer map
     out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(test_name)))
     if not skip_trajectory_extraction:
-        command = extract_SLAM_trajectories(out_pbstream_filename, out_results_rosbag_filename, imu_frame, print_command=True)
+        command = extract_SLAM_trajectories(out_pbstream_filename, out_results_rosbag_filename, robot_name, print_command=True)
         log += command + '\n\n\n'
 
     # Prepare poses in kitti format for evaluation
     gt_rosbag_filenames = list(map(os.path.abspath, gt_rosbag_files))
-    transforms_source_filename = urdf_filename if urdf_file else \
-        os.path.abspath(transforms_source_file) if transforms_source_file else test_rosbag_filenames[0]
     out_global_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', 'global_{}.txt'.format(test_name)))
     out_global_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', 'global_{}.txt'.format(test_name)))
     out_local_gt_poses_filename = os.path.abspath(os.path.join(validation_folder, 'gt', 'local_{}.txt'.format(test_name)))
@@ -171,13 +230,13 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
     if not skip_poses_preparation:
         command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'global_trajectory_0', \
                                                out_global_gt_poses_filename, out_global_results_poses_filename, \
-                                               transforms_source_filename, out_trajectories_rosbag_filename, \
+                                               robot_name, out_trajectories_rosbag_filename, \
                                                max_union_intersection_time_difference=max_union_intersection_time_difference, \
                                                max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
         log += command + '\n\n\n'
         command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'local_trajectory_0', \
                                                out_local_gt_poses_filename, out_local_results_poses_filename, \
-                                               transforms_source_filename, out_trajectories_rosbag_filename, \
+                                               robot_name, out_trajectories_rosbag_filename, \
                                                max_union_intersection_time_difference=max_union_intersection_time_difference, \
                                                max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
         log += command + '\n\n\n'
