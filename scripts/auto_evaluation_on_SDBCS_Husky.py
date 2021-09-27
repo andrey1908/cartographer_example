@@ -63,22 +63,46 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, validation_f
                                    skip_running_cartographer=False, skip_trajectory_extraction=False, \
                                    skip_poses_preparation=False, skip_evaluation=False):
     rosbag_files = get_rosbag_files(rosbags_folder, rosbag_numbers_to_use=rosbag_numbers_to_use)
-    robot_name = {'xsens': 'sdbcs_husky', 'atlans': 'sdbcs_husky_atlans_imu'}[imu_sensor]
-    log = str()
 
-    for rosbag_file in rosbag_files:
-        rosbag_path = os.path.join(rosbags_folder, rosbag_file)
-        robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
-        test_name = rosbag_file[:2]
-        auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
-                        robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
-                        max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                        max_time_error=max_time_error, max_time_step=max_time_step, \
-                        skip_running_cartographer=skip_running_cartographer, skip_trajectory_extraction=skip_trajectory_extraction, \
-                        skip_poses_preparation=skip_poses_preparation, skip_evaluation=True)
+    if not skip_running_cartographer:
+        for rosbag_file in rosbag_files:
+            rosbag_path = os.path.join(rosbags_folder, rosbag_file)
+            robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
+            test_name = rosbag_file[:2]
+            auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                            max_time_error=max_time_error, max_time_step=max_time_step, \
+                            skip_running_cartographer=skip_running_cartographer, skip_trajectory_extraction=True, \
+                            skip_poses_preparation=True, skip_evaluation=True)
+
+    if not skip_trajectory_extraction:
+        for rosbag_file in rosbag_files:
+            rosbag_path = os.path.join(rosbags_folder, rosbag_file)
+            robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
+            test_name = rosbag_file[:2]
+            auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                            max_time_error=max_time_error, max_time_step=max_time_step, \
+                            skip_running_cartographer=True, skip_trajectory_extraction=skip_trajectory_extraction, \
+                            skip_poses_preparation=True, skip_evaluation=True)
+
+    if not skip_poses_preparation:
+        for rosbag_file in rosbag_files:
+            rosbag_path = os.path.join(rosbags_folder, rosbag_file)
+            robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
+            test_name = rosbag_file[:2]
+            auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                            max_time_error=max_time_error, max_time_step=max_time_step, \
+                            skip_running_cartographer=True, skip_trajectory_extraction=True, \
+                            skip_poses_preparation=skip_poses_preparation, skip_evaluation=True)
     
-    auto_evaluation('', '', '', out_test_folder, validation_folder, skip_running_cartographer=True, skip_trajectory_extraction=True, \
-                    skip_poses_preparation=True, skip_evaluation=skip_evaluation)
+    if not skip_evaluation:
+        auto_evaluation('', '', '', out_test_folder, validation_folder, skip_running_cartographer=True, skip_trajectory_extraction=True, \
+                        skip_poses_preparation=True, skip_evaluation=skip_evaluation)
 
 
 if __name__ == '__main__':
