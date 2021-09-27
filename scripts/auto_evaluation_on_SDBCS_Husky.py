@@ -28,9 +28,9 @@ def build_parser():
 
 def get_rosbag_files(rosbags_folder, rosbag_numbers_to_use=None):
     rosbag_files = os.listdir(rosbags_folder)
-    rosbag_files = [bag for bag in rosbag_files if bag.endswith('bag')]
-    rosbag_files = [bag for bag in rosbag_files if bag[:2].isdigit()]
-    assert(len(rosbag_files) == 21)
+    rosbag_files = [bag for bag in rosbag_files if bag[:2].isdigit() and bag.endswith('bag')]
+    if len(rosbag_files) != 21:
+        raise RuntimeError
     if rosbag_numbers_to_use:
         rosbag_files = [bag for bag in rosbag_files if int(bag[:2]) in rosbag_numbers_to_use]
     rosbag_files.sort()
