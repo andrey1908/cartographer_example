@@ -79,9 +79,8 @@ POSE_GRAPH.optimize_every_n_nodes = 90
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.02
-POSE_GRAPH.constraint_builder.min_score = 0.3
+POSE_GRAPH.constraint_builder.min_score = 0.35
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
-POSE_GRAPH.constraint_builder.fast_correlative_scan_matcher_3d.linear_z_search_window = 2.
 
 -- Optimization problem --
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
