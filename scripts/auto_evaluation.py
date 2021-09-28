@@ -38,7 +38,7 @@ def make_dirs(out_test_folder, validation_folder):
 
 
 def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='default', dimension='3d', \
-                     node_to_use='online', print_command=False):
+                     node_to_use='online', print_log=False):
     if isinstance(rosbag_filenames, str):
         rosbag_filenames = [rosbag_filenames]
     if node_to_use not in ['online', 'offline']:
@@ -49,8 +49,8 @@ def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='defaul
     if node_to_use == 'online':
         command = "roslaunch cartographer_example cartographer.launch   robot:={}    dim:={}    \
 publish_occupancy_grid:=false".format(robot_name, dimension)
-    if print_command:
-        print('\n\n\n' + command + '\n')
+    if print_log:
+        print('\n\n\n\n' + command + '\n')
     process = subprocess.Popen(command.split())
     
     if node_to_use == 'online':
@@ -112,23 +112,26 @@ def robot_name_to_imu_frame(robot: str):
             if line.find('options.tracking_frame') == -1:
                 continue
             start_idx = line.find('=')
-            if start_idx == -1:
+            if start_idx == -1 or start_idx == len(line) - 1:
                 raise RuntimeError
             start_idx += 1
             end_idx = len(line) - 1
             imu_frame = eval(line[start_idx:end_idx])
+            if isinstance(imu_frame, tuple):
+                imu_frame = imu_frame[0]
             if not isinstance(imu_frame, str):
                 raise RuntimeError
             return imu_frame
     raise RuntimeError
 
 
-def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, robot_name='default', print_command=False):
+def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, robot_name='default', print_log=False):
     imu_frame = robot_name_to_imu_frame(robot_name)
     command = "rosrun cartographer_ros pbstream_trajectories_to_rosbag    -input {}    -output {}    \
 -tracking_frame {}".format(pbstream_filename, out_results_rosbag_filename, imu_frame)
-    if print_command:
-        print('\n\n\n' + command + '\n')
+    if print_log:
+        print('\n\n\n\n' + 'imu frame: ' + imu_frame + '\n')
+        print(command + '\n')
     process = subprocess.Popen(command.split())
     process.communicate()
     assert(process.returncode == 0)
@@ -159,7 +162,7 @@ def robot_name_to_transforms_source_filename(robot: str):
 def prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, results_rosbag_filenames, results_topic, \
                                  out_gt_poses_filename, out_results_poses_filename, robot_name='default', \
                                  out_trajectories_rosbag_filename='\'\'', max_union_intersection_time_difference=0.9, \
-                                 max_time_error=0.01, max_time_step=0.7, print_command=False):
+                                 max_time_error=0.01, max_time_step=0.7, print_log=False):
     if isinstance(gt_rosbag_filenames, str):
         gt_rosbag_filenames = [gt_rosbag_filenames]
     if isinstance(results_rosbag_filenames, str):
@@ -171,15 +174,16 @@ def prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, results_rosbag_f
 --max-time-step {}".format(' '.join(gt_rosbag_filenames), gt_topic, ' '.join(results_rosbag_filenames), results_topic, out_gt_poses_filename, \
                            out_results_poses_filename, transforms_source_filename, out_trajectories_rosbag_filename, \
                            max_union_intersection_time_difference, max_time_error, max_time_step)
-    if print_command:
-        print('\n\n\n' + command + '\n')
+    if print_log:
+        print('\n\n\n\n' + 'transforms source filename: ' + transforms_source_filename + '\n')
+        print(command + '\n')
     process = subprocess.Popen(command.split())
     process.communicate()
     assert(process.returncode == 0)
     return command
 
 
-def run_evaluation(validation_folder, projection='xy', print_command=False):
+def run_evaluation(validation_folder, projection='xy', print_log=False):
     gt_poses_folder = os.path.abspath(os.path.join(validation_folder, 'gt'))
     results_poses_folder = os.path.abspath(os.path.join(validation_folder, 'results'))
     out_folder = os.path.abspath(os.path.join(validation_folder, 'output_{}'.format(projection)))
@@ -187,8 +191,8 @@ def run_evaluation(validation_folder, projection='xy', print_command=False):
     command = "python /home/cds-jetson-host/slam_validation/evaluate_poses.py    --dir_gt {}    --dir_result {}    \
 --dir_output {}    --gt_format kitti    --result_format kitti    \
 --projection {}".format(gt_poses_folder, results_poses_folder, out_folder, projection)
-    if print_command:
-        print('\n\n\n' + command + '\n')
+    if print_log:
+        print('\n\n\n\n' + command + '\n')
     process = subprocess.Popen(command.split())
     process.communicate()
     assert(process.returncode == 0)
@@ -211,14 +215,14 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
     if not skip_running_cartographer:
         command = run_cartographer(test_rosbag_filenames, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
-                                   node_to_use=node_to_use, print_command=True)
-        log += command + '\n\n\n'
+                                   node_to_use=node_to_use, print_log=True)
+        log += command + '\n\n\n\n'
     
     # Extract SLAM trajectories from cartographer map
     out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(test_name)))
     if not skip_trajectory_extraction:
-        command = extract_SLAM_trajectories(out_pbstream_filename, out_results_rosbag_filename, robot_name, print_command=True)
-        log += command + '\n\n\n'
+        command = extract_SLAM_trajectories(out_pbstream_filename, out_results_rosbag_filename, robot_name, print_log=True)
+        log += command + '\n\n\n\n'
 
     # Prepare poses in kitti format for evaluation
     gt_rosbag_filenames = list(map(os.path.abspath, gt_rosbag_files))
@@ -232,22 +236,22 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
                                                out_global_gt_poses_filename, out_global_results_poses_filename, \
                                                robot_name, out_trajectories_rosbag_filename, \
                                                max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                                               max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
-        log += command + '\n\n\n'
+                                               max_time_error=max_time_error, max_time_step=max_time_step, print_log=True)
+        log += command + '\n\n\n\n'
         command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'local_trajectory_0', \
                                                out_local_gt_poses_filename, out_local_results_poses_filename, \
                                                robot_name, out_trajectories_rosbag_filename, \
                                                max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                                               max_time_error=max_time_error, max_time_step=max_time_step, print_command=True)
-        log += command + '\n\n\n'
+                                               max_time_error=max_time_error, max_time_step=max_time_step, print_log=True)
+        log += command + '\n\n\n\n'
     
     # Run evaluation
     if not skip_evaluation:
         for projection in ['xy', 'xz', 'yz']:
-            command = run_evaluation(validation_folder, projection=projection, print_command=True)
-            log += command + '\n\n\n'
+            command = run_evaluation(validation_folder, projection=projection, print_log=True)
+            log += command + '\n\n\n\n'
     
-    print(log)
+    # print(log)
 
 
 if __name__ == '__main__':
