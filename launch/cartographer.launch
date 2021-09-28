@@ -28,8 +28,8 @@
     <arg if="$(eval robot == 'default' and dim == '2d')" name="config_file" value="config_2d.lua" />
     <arg if="$(eval robot == 'default' and dim == '3d')" name="config_file" value="config_3d.lua" />
     <!-- SDBCS_Husky settings -->
-    <arg if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans_imu') == -1 and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d.lua" />
-    <arg if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans_imu') == -1 and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d.lua" />
+    <arg if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans') == -1 and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d.lua" />
+    <arg if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans') == -1 and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d.lua" />
     <arg if="$(eval robot.startswith('sdbcs_husky_atlans_imu') and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d_atlans_imu.lua" />
     <arg if="$(eval robot.startswith('sdbcs_husky_atlans_imu') and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d_atlans_imu.lua" />
     <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_16'))" file="$(find cartographer_example)/launch/SDBCS_Husky/tf_03-16.launch" />
@@ -76,7 +76,7 @@
         <remap if="$(eval robot == 'default')" from="imu" to="/xsens/imu/data" />
         <remap if="$(eval robot == 'default')" from="points2" to="/velodyne_points" />
         <!-- SDBCS_Husky topics -->
-        <remap if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans_imu') == -1)" from="imu" to="/xsens/imu/data" />
+        <remap if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans') == -1)" from="imu" to="/xsens/imu/data" />
         <remap if="$(eval robot.startswith('sdbcs_husky_atlans_imu'))" from="imu" to="/atlans_imu" />
         <remap if="$(eval robot.startswith('sdbcs_husky'))" from="points2" to="/velodyne_points" />
         <!-- sweeper topics -->
