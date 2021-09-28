@@ -25,15 +25,15 @@
         0.36560115218162537 -9.979873721022159e-05 -0.0002613161050248891 0.9307717084884644
         os64central/sensor os32right/sensor"/>
     <node pkg="tf2_ros" type="static_transform_publisher" name="central_lidar_to_central_imu" 
-        args="0.006253 -0.011.775 0.007645 
+        args="0.006253 -0.011775 0.007645 
             0 0 0 
             os64central/sensor os64central/imu" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="left_lidar_to_left_imu" 
-        args="0.006253 -0.011.775 0.007645 
+        args="0.006253 -0.011775 0.007645 
             0 0 0 
             os32left/sensor os32left/imu" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="right_lidar_to_right_imu"
-        args="0.006253 -0.011.775 0.007645
+        args="0.006253 -0.011775 0.007645
             0 0 0 
             os32right/sensor os32right/imu" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_hunter_odom"
