@@ -18,6 +18,8 @@ def build_parser():
     parser.add_argument('-robot', '--robot-name', type=str, default='default')
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Cartographer mode.")
+    parser.add_argument('--get-odom-from-transforms', action='store_true')
+    parser.add_argument('--get-odom-from-topic', action='store_true')
     parser.add_argument('--test-name', type=str, default='test')
 
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
@@ -35,6 +37,62 @@ def make_dirs(out_test_folder, validation_folder):
     os.makedirs(out_test_folder, exist_ok=True)
     os.makedirs(os.path.join(validation_folder, 'gt'), exist_ok=True)
     os.makedirs(os.path.join(validation_folder, 'results'), exist_ok=True)
+
+
+def robot_name_to_imu_frame(robot: str):
+    dim = '3d'  # imu frame does not depend on dim, but this variable is needed to evaluate expression in eval()
+    rospack = rospkg.RosPack()
+    cartographer_example_folder = rospack.get_path('cartographer_example')
+    tree = ET.parse(os.path.join(cartographer_example_folder, 'launch/cartographer.launch'))
+    root = tree.getroot()
+    for elem in root:
+        if elem.tag != 'arg':
+            continue
+        if elem.attrib['name'] != 'config_file':
+            continue
+        expression = elem.attrib.get('if')
+        if expression is None:
+            continue
+        expression = expression.replace('$(eval', '')
+        expression = expression[:expression.rfind(')')]
+        if not eval(expression):
+            continue
+        config_filename = os.path.join(cartographer_example_folder, 'config', elem.attrib['value'])
+        with open(config_filename, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            if line.find('tracking_frame') == -1:
+                continue
+            start_idx = line.find('=')
+            if start_idx == -1 or start_idx == len(line) - 1:
+                raise RuntimeError
+            start_idx += 1
+            end_idx = len(line)
+            imu_frame = eval(line[start_idx:end_idx])
+            if isinstance(imu_frame, tuple):
+                imu_frame = imu_frame[0]
+            if not isinstance(imu_frame, str):
+                raise RuntimeError
+            return imu_frame
+    raise RuntimeError
+
+
+def start_reading_cartographer_odometry(robot_name, out_results_rosbag_filename, get_odom_from_transforms=False, get_odom_from_topic=False):
+    if get_odom_from_transforms:
+        imu_frame = robot_name_to_imu_frame(robot_name)
+        command = "rosrun ros_utils read_transforms.py    -from odom    -to {}    \
+-out-bag {}    -out-topic {}".format(imu_frame, out_results_rosbag_filename, 'local_trajectory_0')
+    elif get_odom_from_topic:
+        command = "rosbag record local_trajectory_0 -O {} local_trajectory_0:=/cartographer/tracked_pose".format(out_results_rosbag_filename)
+    else:
+        raise RuntimeError()
+    cartographer_odometry_reader = subprocess.Popen(command.split())
+    return cartographer_odometry_reader
+
+
+def stop_reading_cartographer_odometry(cartographer_odometry_reader: subprocess.Popen):
+    cartographer_odometry_reader.terminate()
+    cartographer_odometry_reader.communicate()
 
 
 def run_cartographer(rosbag_filenames, out_pbstream_filename, robot_name='default', dimension='3d', \
@@ -81,48 +139,10 @@ publish_occupancy_grid:=false".format(robot_name, dimension)
         write_state.communicate()
         assert(write_state.returncode == 0)
         process.terminate()
-        
+
     process.communicate()
     assert(process.returncode == 0)
     return command
-
-
-def robot_name_to_imu_frame(robot: str):
-    dim = '3d'  # imu frame does not depend on dim, but this variable is needed to evaluate expression in eval()
-    rospack = rospkg.RosPack()
-    cartographer_example_folder = rospack.get_path('cartographer_example')
-    tree = ET.parse(os.path.join(cartographer_example_folder, 'launch/cartographer.launch'))
-    root = tree.getroot()
-    for elem in root:
-        if elem.tag != 'arg':
-            continue
-        if elem.attrib['name'] != 'config_file':
-            continue
-        expression = elem.attrib.get('if')
-        if expression is None:
-            continue
-        expression = expression.replace('$(eval', '')
-        expression = expression[:expression.rfind(')')]
-        if not eval(expression):
-            continue
-        config_filename = os.path.join(cartographer_example_folder, 'config', elem.attrib['value'])
-        with open(config_filename, 'r') as f:
-            lines = f.readlines()
-        for line in lines:
-            if line.find('options.tracking_frame') == -1:
-                continue
-            start_idx = line.find('=')
-            if start_idx == -1 or start_idx == len(line) - 1:
-                raise RuntimeError
-            start_idx += 1
-            end_idx = len(line) - 1
-            imu_frame = eval(line[start_idx:end_idx])
-            if isinstance(imu_frame, tuple):
-                imu_frame = imu_frame[0]
-            if not isinstance(imu_frame, str):
-                raise RuntimeError
-            return imu_frame
-    raise RuntimeError
 
 
 def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, robot_name='default', print_log=False):
@@ -200,7 +220,8 @@ def run_evaluation(validation_folder, projection='xy', print_log=False):
 
 
 def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folder, validation_folder, \
-                    robot_name='default', dimension='3d', node_to_use='online', test_name='test', \
+                    robot_name='default', dimension='3d', node_to_use='online', \
+                    get_odom_from_transforms=False, get_odom_from_topic=False, test_name='test', \
                     max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
                     skip_running_cartographer=False, skip_trajectory_extraction=False, skip_poses_preparation=False, skip_evaluation=False):
     if isinstance(test_rosbag_files, str):
@@ -213,14 +234,21 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
     # Run cartographer to generate a map
     test_rosbag_filenames = list(map(os.path.abspath, test_rosbag_files))
     out_pbstream_filename = os.path.abspath(os.path.join(out_test_folder, '{}.pbstream'.format(test_name)))
+    out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(test_name)))
+    poses_from_cartographer_map = not (get_odom_from_transforms or get_odom_from_topic)
     if not skip_running_cartographer:
+        if not poses_from_cartographer_map:
+            cartographer_odometry_reader = start_reading_cartographer_odometry(robot_name, out_results_rosbag_filename, \
+                                                                               get_odom_from_transforms=get_odom_from_transforms, \
+                                                                               get_odom_from_topic=get_odom_from_topic)
         command = run_cartographer(test_rosbag_filenames, out_pbstream_filename, robot_name=robot_name, dimension=dimension, \
                                    node_to_use=node_to_use, print_log=True)
+        if not poses_from_cartographer_map:
+            stop_reading_cartographer_odometry(cartographer_odometry_reader)
         log += command + '\n\n\n\n'
     
     # Extract SLAM trajectories from cartographer map
-    out_results_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}.bag'.format(test_name)))
-    if not skip_trajectory_extraction:
+    if not skip_trajectory_extraction and poses_from_cartographer_map:
         command = extract_SLAM_trajectories(out_pbstream_filename, out_results_rosbag_filename, robot_name, print_log=True)
         log += command + '\n\n\n\n'
 
@@ -232,12 +260,13 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
     out_local_results_poses_filename = os.path.abspath(os.path.join(validation_folder, 'results', 'local_{}.txt'.format(test_name)))
     out_trajectories_rosbag_filename = os.path.abspath(os.path.join(out_test_folder, '{}_trajectories.bag'.format(test_name)))
     if not skip_poses_preparation:
-        command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'global_trajectory_0', \
-                                               out_global_gt_poses_filename, out_global_results_poses_filename, \
-                                               robot_name, out_trajectories_rosbag_filename, \
-                                               max_union_intersection_time_difference=max_union_intersection_time_difference, \
-                                               max_time_error=max_time_error, max_time_step=max_time_step, print_log=True)
-        log += command + '\n\n\n\n'
+        if poses_from_cartographer_map:
+            command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'global_trajectory_0', \
+                                                out_global_gt_poses_filename, out_global_results_poses_filename, \
+                                                robot_name, out_trajectories_rosbag_filename, \
+                                                max_union_intersection_time_difference=max_union_intersection_time_difference, \
+                                                max_time_error=max_time_error, max_time_step=max_time_step, print_log=True)
+            log += command + '\n\n\n\n'
         command = prepare_poses_for_evaluation(gt_rosbag_filenames, gt_topic, out_results_rosbag_filename, 'local_trajectory_0', \
                                                out_local_gt_poses_filename, out_local_results_poses_filename, \
                                                robot_name, out_trajectories_rosbag_filename, \

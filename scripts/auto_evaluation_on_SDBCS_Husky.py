@@ -13,6 +13,8 @@ def build_parser():
     parser.add_argument('-imu', '--imu-sensor', type=str, default='xsens', choices=['xsens', 'atlans'], help="What imu to use.")
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Cartographer mode.")
+    parser.add_argument('--get-odom-from-transforms', action='store_true')
+    parser.add_argument('--get-odom-from-topic', action='store_true')
     parser.add_argument('-bags-to-use', '--rosbag-numbers-to-use', type=int, nargs='+', help="Rosbag files to validate on. If empty, all rosbag files will be used.")
 
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
@@ -58,7 +60,8 @@ def get_robot_name(rosbag_file: str, calibration_version: int, imu_sensor: str):
 
 
 def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, validation_folder, calibration_version=1, \
-                                   imu_sensor='xsens', dimension='3d', node_to_use='online', rosbag_numbers_to_use=None, \
+                                   imu_sensor='xsens', dimension='3d', node_to_use='online', \
+                                   get_odom_from_transforms=False, get_odom_from_topic=False, rosbag_numbers_to_use=None, \
                                    max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
                                    skip_running_cartographer=False, skip_trajectory_extraction=False, \
                                    skip_poses_preparation=False, skip_evaluation=False):
@@ -70,7 +73,8 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, validation_f
             robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
             test_name = rosbag_file[:2]
             auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
-                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, \
+                            get_odom_from_transforms=get_odom_from_transforms, get_odom_from_topic=get_odom_from_topic, test_name=test_name, \
                             max_union_intersection_time_difference=max_union_intersection_time_difference, \
                             max_time_error=max_time_error, max_time_step=max_time_step, \
                             skip_running_cartographer=skip_running_cartographer, skip_trajectory_extraction=True, \
@@ -82,7 +86,8 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, validation_f
             robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
             test_name = rosbag_file[:2]
             auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
-                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, \
+                            get_odom_from_transforms=get_odom_from_transforms, get_odom_from_topic=get_odom_from_topic, test_name=test_name, \
                             max_union_intersection_time_difference=max_union_intersection_time_difference, \
                             max_time_error=max_time_error, max_time_step=max_time_step, \
                             skip_running_cartographer=True, skip_trajectory_extraction=skip_trajectory_extraction, \
@@ -94,7 +99,8 @@ def auto_evaluation_on_SDBCS_Husky(rosbags_folder, out_test_folder, validation_f
             robot_name = get_robot_name(rosbag_file, calibration_version, imu_sensor)
             test_name = rosbag_file[:2]
             auto_evaluation(rosbag_path, rosbag_path, '/atlans_odom', out_test_folder, validation_folder, \
-                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, \
+                            get_odom_from_transforms=get_odom_from_transforms, get_odom_from_topic=get_odom_from_topic, test_name=test_name, \
                             max_union_intersection_time_difference=max_union_intersection_time_difference, \
                             max_time_error=max_time_error, max_time_step=max_time_step, \
                             skip_running_cartographer=True, skip_trajectory_extraction=True, \

@@ -12,6 +12,8 @@ def build_parser():
     parser.add_argument('-imu', '--imu-sensor', type=str, default='xsens', choices=['xsens', 'left', 'central', 'right'], help="What imu to use.")
     parser.add_argument('-dim', '--dimension', type=str, default='3d', choices=['3d', '2d'], help="Which SLAM to use: 2d or 3d.")
     parser.add_argument('-node', '--node-to-use', type=str, default='online', choices=['online', 'offline'], help="Cartographer mode.")
+    parser.add_argument('--get-odom-from-transforms', action='store_true')
+    parser.add_argument('--get-odom-from-topic', action='store_true')
 
     parser.add_argument('--max-union-intersection-time-difference', type=float, default=0.9, help="Max difference between union and intersection or time ragnes where gt and SLAM poses are set.")
     parser.add_argument('--max-time-error', type=float, default=0.01, help="Max time error during matching gt and SLAM poses.")
@@ -40,6 +42,7 @@ def get_rosbag_files_groups(rosbags_folder):
 
 def auto_evaluation_on_stone_flower(rosbags_folder, out_test_folder, validation_folder, \
                                    imu_sensor='xsens', dimension='3d', node_to_use='online', \
+                                   get_odom_from_transforms=False, get_odom_from_topic=False, \
                                    max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
                                    skip_running_cartographer=False, skip_trajectory_extraction=False, \
                                    skip_poses_preparation=False, skip_evaluation=False):
@@ -51,7 +54,8 @@ def auto_evaluation_on_stone_flower(rosbags_folder, out_test_folder, validation_
             rosbag_paths = list(map(lambda rosbag_file: os.path.join(rosbags_folder, rosbag_file), rosbag_files))
             test_name = 'stone_flower' if rosbag_files[0].find('add') == -1 else 'stone_flower_add'
             auto_evaluation(rosbag_paths, rosbag_paths, '/xsens/odometry', out_test_folder, validation_folder, \
-                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, \
+                            get_odom_from_transforms=get_odom_from_transforms, get_odom_from_topic=get_odom_from_topic, test_name=test_name, \
                             max_union_intersection_time_difference=max_union_intersection_time_difference, \
                             max_time_error=max_time_error, max_time_step=max_time_step, \
                             skip_running_cartographer=skip_running_cartographer, skip_trajectory_extraction=True, \
@@ -62,7 +66,8 @@ def auto_evaluation_on_stone_flower(rosbags_folder, out_test_folder, validation_
             rosbag_paths = list(map(lambda rosbag_file: os.path.join(rosbags_folder, rosbag_file), rosbag_files))
             test_name = 'stone_flower' if rosbag_files[0].find('add') == -1 else 'stone_flower_add'
             auto_evaluation(rosbag_paths, rosbag_paths, '/xsens/odometry', out_test_folder, validation_folder, \
-                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, \
+                            get_odom_from_transforms=get_odom_from_transforms, get_odom_from_topic=get_odom_from_topic, test_name=test_name, \
                             max_union_intersection_time_difference=max_union_intersection_time_difference, \
                             max_time_error=max_time_error, max_time_step=max_time_step, \
                             skip_running_cartographer=True, skip_trajectory_extraction=skip_trajectory_extraction, \
@@ -73,7 +78,8 @@ def auto_evaluation_on_stone_flower(rosbags_folder, out_test_folder, validation_
             rosbag_paths = list(map(lambda rosbag_file: os.path.join(rosbags_folder, rosbag_file), rosbag_files))
             test_name = 'stone_flower' if rosbag_files[0].find('add') == -1 else 'stone_flower_add'
             auto_evaluation(rosbag_paths, rosbag_paths, '/xsens/odometry', out_test_folder, validation_folder, \
-                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, test_name=test_name, \
+                            robot_name=robot_name, dimension=dimension, node_to_use=node_to_use, \
+                            get_odom_from_transforms=get_odom_from_transforms, get_odom_from_topic=get_odom_from_topic, test_name=test_name, \
                             max_union_intersection_time_difference=max_union_intersection_time_difference, \
                             max_time_error=max_time_error, max_time_step=max_time_step, \
                             skip_running_cartographer=True, skip_trajectory_extraction=True, \
