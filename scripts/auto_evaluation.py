@@ -208,7 +208,7 @@ def run_evaluation(validation_folder, projection='xy', print_log=False):
     results_poses_folder = os.path.abspath(os.path.join(validation_folder, 'results'))
     out_folder = os.path.abspath(os.path.join(validation_folder, 'output_{}'.format(projection)))
 
-    command = "python /home/cds-jetson-host/slam_validation/evaluate_poses.py    --dir_gt {}    --dir_result {}    \
+    command = "python3 /home/cds-jetson-host/slam_validation/evaluate_poses.py    --dir_gt {}    --dir_result {}    \
 --dir_output {}    --gt_format kitti    --result_format kitti    \
 --projection {}".format(gt_poses_folder, results_poses_folder, out_folder, projection)
     if print_log:
