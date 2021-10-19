@@ -40,16 +40,20 @@ def make_dirs(out_test_folder, validation_folder):
 
 
 def robot_name_to_imu_frame(robot: str):
-    dim = '3d'  # imu frame does not depend on dim, but this variable is needed to evaluate expression in eval()
+    # imu frame does not depend on dim, but this variable is needed to evaluate expression from cartographer.launch file
+    dim = '3d'
+    # find cartographer.launch file and open it with xml parser
     rospack = rospkg.RosPack()
     cartographer_example_folder = rospack.get_path('cartographer_example')
     tree = ET.parse(os.path.join(cartographer_example_folder, 'launch/cartographer.launch'))
     root = tree.getroot()
     for elem in root:
+        # find argument named config_file
         if elem.tag != 'arg':
             continue
         if elem.attrib['name'] != 'config_file':
             continue
+        # evaluate expression
         expression = elem.attrib.get('if')
         if expression is None:
             continue
@@ -57,10 +61,13 @@ def robot_name_to_imu_frame(robot: str):
         expression = expression[:expression.rfind(')')]
         if not eval(expression):
             continue
+        # find config file path and read it
         config_filename = os.path.join(cartographer_example_folder, 'config', elem.attrib['value'])
         with open(config_filename, 'r') as f:
             lines = f.readlines()
-        for line in lines:
+        # find tracking_frame variable and read its value
+        imu_frame = None
+        for num, line in enumerate(lines):
             if line.find('tracking_frame') == -1:
                 continue
             start_idx = line.find('=')
@@ -73,7 +80,14 @@ def robot_name_to_imu_frame(robot: str):
                 imu_frame = imu_frame[0]
             if not isinstance(imu_frame, str):
                 raise RuntimeError
-            return imu_frame
+            break
+        if imu_frame is None:
+            raise RuntimeError
+        # check that tracking_frame variable encounters only once
+        for i in range(num+1, len(lines)):
+            if lines[i].find('tracking_frame') != -1:
+                raise RuntimeError
+        return imu_frame
     raise RuntimeError
 
 
@@ -159,13 +173,16 @@ def extract_SLAM_trajectories(pbstream_filename, out_results_rosbag_filename, ro
 
 
 def robot_name_to_transforms_source_filename(robot: str):
+    # find cartographer.launch file and open it with xml parser
     rospack = rospkg.RosPack()
     cartographer_example_folder = rospack.get_path('cartographer_example')
     tree = ET.parse(os.path.join(cartographer_example_folder, 'launch/cartographer.launch'))
     root = tree.getroot()
     for elem in root:
+        # find include tag
         if elem.tag != 'include':
             continue
+        # evaluate expression
         expression = elem.attrib.get('if')
         if expression is None:
             continue
@@ -173,6 +190,7 @@ def robot_name_to_transforms_source_filename(robot: str):
         expression = expression[:expression.rfind(')')]
         if not eval(expression):
             continue
+        # find transforms source file path
         transforms_source_file = elem.attrib['file'].replace('$(find cartographer_example)/', '')
         transforms_source_filename = os.path.join(cartographer_example_folder, transforms_source_file)
         return transforms_source_filename
