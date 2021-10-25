@@ -242,6 +242,9 @@ def auto_evaluation(test_rosbag_files, gt_rosbag_files, gt_topic, out_test_folde
                     get_odom_from_transforms=False, get_odom_from_topic=False, test_name='test', \
                     max_union_intersection_time_difference=0.9, max_time_error=0.01, max_time_step=0.7, \
                     skip_running_cartographer=False, skip_trajectory_extraction=False, skip_poses_preparation=False, skip_evaluation=False):
+    if get_odom_from_topic:
+        raise RuntimeError("--get-odom-from-topic can not be used, because pose from this topic is global (optimized)")
+    
     if isinstance(test_rosbag_files, str):
         test_rosbag_files = [test_rosbag_files]
     if isinstance(gt_rosbag_files, str):
