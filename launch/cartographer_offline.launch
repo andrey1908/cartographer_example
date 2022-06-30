@@ -17,31 +17,30 @@
 <launch>
 
     <!-- Arguments -->
-    
-    <!-- dim - 2d or 3d -->
-    <arg name="dim" default="3d"/>
-    <arg if="$(eval dim == '2d')" name="config_file" value="config_2d.lua"/>
-    <arg if="$(eval dim == '3d')" name="config_file" value="config_3d.lua"/>
-    
-    <!-- bag_filenames - bag files to process -->
-    <arg name="bag_filenames"/>
-    
-    <!-- urdf_filenames - robot model files -->
-    <arg name="urdf_filenames" default="''"/>
-    
-    <!-- save_state_filename - where to save the map -->
-    <arg name="save_state_filename" default="''"/>
+    <arg name="config_filenames" />
+    <arg name="bag_filenames" />
+
+    <arg name="urdf_filenames" default="''" />
+
+    <arg name="load_state_filename" default="''" />
+    <arg name="load_frozen_state" default="true" />
+    <arg name="save_state_filename" default="''" />
+
+    <!-- Topics -->
+    <arg name="imu_topic" default="/xsens/imu/data" />
+    <arg name="point2_topic" default="/velodyne_points" />
 
     <!-- Cartographer offline -->
-    <node pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" ns="cartographer_offline" args="
-            -configuration_directory $(find cartographer_example)/config
-            -configuration_basenames $(arg config_file)
-            -urdf_filenames $(arg urdf_filenames)
+    <node ns="cartographer_offline" pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" args="
+            -configuration_filenames $(arg config_filenames)
             -bag_filenames $(arg bag_filenames)
+            -urdf_filenames $(arg urdf_filenames)
+            -load_state_filename $(arg load_state_filename)
+            -load_frozen_state=$(arg load_frozen_state)
             -save_state_filename $(arg save_state_filename)"
             output="screen">
-        <remap from="imu" to="/xsens/imu/data"/>
-        <remap from="points2" to="/velodyne_points" />
+        <remap from="imu" to="$(arg imu_topic)" />
+        <remap from="points2" to="$(arg point2_topic)" />
     </node>
 
 </launch>

@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-include "sweeper/sweeper_3d_base.lua"
+include "sweeper_3d_base.lua"
 
 options.tracking_frame = "os32right/imu"
 

@@ -17,78 +17,30 @@
 <launch>
 
     <!-- Arguments -->
-    
-    <!-- robot - robot name -->
-    <arg name="robot" default="default" />
-    
-    <!-- dim - 2d or 3d -->
-    <arg name="dim" default="3d" />
-    
-    <!-- default robot settings -->
-    <arg if="$(eval robot == 'default' and dim == '2d')" name="config_file" value="config_2d.lua" />
-    <arg if="$(eval robot == 'default' and dim == '3d')" name="config_file" value="config_3d.lua" />
-    <!-- SDBCS_Husky settings -->
-    <arg if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans') == -1 and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d.lua" />
-    <arg if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans') == -1 and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d.lua" />
-    <arg if="$(eval robot.startswith('sdbcs_husky_atlans_imu') and dim == '2d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_2d_atlans_imu.lua" />
-    <arg if="$(eval robot.startswith('sdbcs_husky_atlans_imu') and dim == '3d')" name="config_file" value="SDBCS_Husky/sdbcs_husky_3d_atlans_imu.lua" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_16'))" file="$(find cartographer_example)/launch/SDBCS_Husky/tf_03-16.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_17'))" file="$(find cartographer_example)/launch/SDBCS_Husky/tf_03-17.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_04_24'))" file="$(find cartographer_example)/launch/SDBCS_Husky/tf_04-24.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_16_v2'))" file="$(find cartographer_example)/launch/SDBCS_Husky/v2/tf_03-16_v2.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_17_v2'))" file="$(find cartographer_example)/launch/SDBCS_Husky/v2/tf_03-17_v2.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_04_24_v2'))" file="$(find cartographer_example)/launch/SDBCS_Husky/v2/tf_04-24_v2.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_16_v3'))" file="$(find cartographer_example)/launch/SDBCS_Husky/v3/tf_03-16_v3.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_03_17_v3'))" file="$(find cartographer_example)/launch/SDBCS_Husky/v3/tf_03-17_v3.launch" />
-    <include if="$(eval robot.startswith('sdbcs_husky') and robot.endswith('_04_24_v3'))" file="$(find cartographer_example)/launch/SDBCS_Husky/v3/tf_04-24_v3.launch" />
-    <!-- sweeper settings -->
-    <arg if="$(eval robot == 'sweeper' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d.lua" />
-    <arg if="$(eval robot == 'sweeper' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d.lua" />
-    <arg if="$(eval robot == 'sweeper_left_imu' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d_left_imu.lua" />
-    <arg if="$(eval robot == 'sweeper_left_imu' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d_left_imu.lua" />
-    <arg if="$(eval robot == 'sweeper_central_imu' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d_central_imu.lua" />
-    <arg if="$(eval robot == 'sweeper_central_imu' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d_central_imu.lua" />
-    <arg if="$(eval robot == 'sweeper_right_imu' and dim == '2d')" name="config_file" value="sweeper/sweeper_2d_right_imu.lua" />
-    <arg if="$(eval robot == 'sweeper_right_imu' and dim == '3d')" name="config_file" value="sweeper/sweeper_3d_right_imu.lua" />
-    <include if="$(eval robot.startswith('sweeper'))" file="$(find cartographer_example)/launch/sweeper/sweeper_tf_calibration.launch" />
-    
-    <!-- save_state_filename - where to save the map -->
-    <arg name="save_state_filename" default="''" />
-    
-    <!-- load_state_filename - where to load the map from -->
+    <arg name="config_filename" />
+
     <arg name="load_state_filename" default="''" />
-    
-    <!-- load_frozen_state - freeze loaded map or not -->
     <arg name="load_frozen_state" default="true" />
-    
-    <!-- publish_occupancy_grid - whether to use occupancy grid node -->
+    <arg name="save_state_filename" default="''" />
+
     <arg name="publish_occupancy_grid" default="true" />
-    
+
+    <!-- Topics -->
+    <arg name="imu_topic" default="/xsens/imu/data" />
+    <arg name="point2_topic" default="/velodyne_points" />
+
     <!-- Cartographer -->
-    <node pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" ns="cartographer" args="
-            -configuration_directory $(find cartographer_example)/config
-            -configuration_basename $(arg config_file)
-            -save_state_filename $(arg save_state_filename)
+    <node ns="cartographer" pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" args="
+            -configuration_filename $(arg config_filename)
             -load_state_filename $(arg load_state_filename)
-            -load_frozen_state=$(arg load_frozen_state)"
+            -load_frozen_state=$(arg load_frozen_state)
+            -save_state_filename $(arg save_state_filename)"
             output="screen">
-        <!-- default robot topics -->
-        <remap if="$(eval robot == 'default')" from="imu" to="/xsens/imu/data" />
-        <remap if="$(eval robot == 'default')" from="points2" to="/velodyne_points" />
-        <!-- SDBCS_Husky topics -->
-        <remap if="$(eval robot.startswith('sdbcs_husky') and robot.find('atlans') == -1)" from="imu" to="/xsens/imu/data" />
-        <remap if="$(eval robot.startswith('sdbcs_husky_atlans_imu'))" from="imu" to="/atlans_imu" />
-        <remap if="$(eval robot.startswith('sdbcs_husky'))" from="points2" to="/velodyne_points" />
-        <!-- sweeper topics -->
-        <remap if="$(eval robot == 'sweeper')" from="imu" to="/xsens/imu/data" />
-        <remap if="$(eval robot == 'sweeper_left_imu')" from="imu" to="/aufd/left/os_cloud_node/imu" />
-        <remap if="$(eval robot == 'sweeper_central_imu')" from="imu" to="/aufd/central/os_cloud_node/imu" />
-        <remap if="$(eval robot == 'sweeper_right_imu')" from="imu" to="/aufd/right/os_cloud_node/imu" />
-        <remap if="$(eval robot.startswith('sweeper'))" from="points2_1" to="/aufd/left/os_cloud_node/points" />
-        <remap if="$(eval robot.startswith('sweeper'))" from="points2_2" to="/aufd/central/os_cloud_node/points" />
-        <remap if="$(eval robot.startswith('sweeper'))" from="points2_3" to="/aufd/right/os_cloud_node/points" />
+        <remap from="imu" to="$(arg imu_topic)" />
+        <remap from="points2" to="$(arg point2_topic)" />
     </node>
-    
-    <node if="$(arg publish_occupancy_grid)" pkg="cartographer_ros" type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" ns="cartographer" args="-resolution 0.05" />
-    
+
+    <node if="$(arg publish_occupancy_grid)" ns="cartographer" pkg="cartographer_ros"
+        type="cartographer_occupancy_grid_node" name="cartographer_occupancy_grid_node" args="-resolution 0.05" />
+
 </launch>
