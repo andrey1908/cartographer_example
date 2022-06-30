@@ -21,6 +21,8 @@
     <arg name="bag_filenames" />
 
     <arg name="urdf_filenames" default="''" />
+    <arg name="use_bag_transforms" default="true" />
+    <arg name="read_transforms_from_topics" default="true" />
 
     <arg name="load_state_filename" default="''" />
     <arg name="load_frozen_state" default="true" />
@@ -35,6 +37,8 @@
             -configuration_filenames $(arg config_filenames)
             -bag_filenames $(arg bag_filenames)
             -urdf_filenames $(arg urdf_filenames)
+            -use_bag_transforms=$(arg use_bag_transforms)
+            -read_transforms_from_topics=$(arg read_transforms_from_topics)
             -load_state_filename $(arg load_state_filename)
             -load_frozen_state=$(arg load_frozen_state)
             -save_state_filename $(arg save_state_filename)"
