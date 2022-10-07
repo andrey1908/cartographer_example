@@ -19,6 +19,7 @@
     <!-- Arguments -->
     <arg name="config_filenames" />
     <arg name="bag_filenames" />
+    <arg name="create_new_trajectory_for_each_rosbag" default="true" />
 
     <arg name="urdf_filenames" default="''" />
     <arg name="use_bag_transforms" default="true" />
@@ -39,6 +40,7 @@
     <node ns="cartographer" pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" args="
             -configuration_filenames $(arg config_filenames)
             -bag_filenames $(arg bag_filenames)
+            -create_new_trajectory_for_each_rosbag=$(arg create_new_trajectory_for_each_rosbag)
             -urdf_filenames $(arg urdf_filenames)
             -use_bag_transforms=$(arg use_bag_transforms)
             -read_transforms_from_topics=$(arg read_transforms_from_topics)
