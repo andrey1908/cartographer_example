@@ -23,7 +23,7 @@
 
     <arg name="urdf_filenames" default="''" />
     <arg name="use_bag_transforms" default="true" />
-    <arg name="read_transforms_from_topics" default="true" />
+    <arg name="read_transforms_from_tf" default="true" />
 
     <arg name="load_state_filename" default="''" />
     <arg name="load_frozen_state" default="true" />
@@ -43,7 +43,7 @@
             -create_new_trajectory_for_each_rosbag=$(arg create_new_trajectory_for_each_rosbag)
             -urdf_filenames $(arg urdf_filenames)
             -use_bag_transforms=$(arg use_bag_transforms)
-            -read_transforms_from_topics=$(arg read_transforms_from_topics)
+            -read_transforms_from_tf=$(arg read_transforms_from_tf)
             -load_state_filename $(arg load_state_filename)
             -load_frozen_state=$(arg load_frozen_state)
             -save_state_filename $(arg save_state_filename)
