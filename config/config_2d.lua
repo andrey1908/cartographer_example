@@ -24,6 +24,7 @@ options = {
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
+  publish_to_tf = true,
   publish_tracked_pose = true,
   use_pose_extrapolator = false,
   use_odometry = false,
