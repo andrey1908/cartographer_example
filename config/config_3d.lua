@@ -52,7 +52,6 @@ TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
 TRAJECTORY_BUILDER_3D.min_range = 1.
 MAX_3D_RANGE = 120.
 TRAJECTORY_BUILDER_3D.max_range = MAX_3D_RANGE
-TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
 
 -- Voxel filter --
 TRAJECTORY_BUILDER_3D.voxel_filter_size = 0.15
