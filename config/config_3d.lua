@@ -46,6 +46,7 @@ options = {
 }
 
 MAP_BUILDER.use_trajectory_builder_3d = true
+TRAJECTORY_BUILDER_3D.use_imu_data = true
 TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
 
 -- Range filter --
