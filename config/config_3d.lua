@@ -90,6 +90,8 @@ POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
 -- Optimization problem --
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
+POSE_GRAPH.optimization_problem.add_local_slam_consecutive_nodes_constraints_in_3d = false
+POSE_GRAPH.optimization_problem.add_odometry_consecutive_nodes_constraints_in_3d = false
 
 -- Logs --
 TRAJECTORY_BUILDER.log_data_frequency = false
