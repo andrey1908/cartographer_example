@@ -91,15 +91,15 @@ POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
 -- Optimization problem --
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
 POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
-POSE_GRAPH.optimization_problem.add_local_slam_consecutive_nodes_constraints_in_3d = false
-POSE_GRAPH.optimization_problem.add_odometry_consecutive_nodes_constraints_in_3d = false
+POSE_GRAPH.optimization_problem.add_local_slam_consecutive_node_constraints_in_3d = false
+POSE_GRAPH.optimization_problem.add_odometry_consecutive_node_constraints_in_3d = false
 
 -- Logs --
 TRAJECTORY_BUILDER.log_data_frequency = false
 TRAJECTORY_BUILDER_3D.motion_filter.log_number_of_nodes_after_reduction = false
-POSE_GRAPH.log_work_queue_size = false
+POSE_GRAPH.log_work_queue_size = true
 POSE_GRAPH.log_residual_histograms = false
-POSE_GRAPH.constraint_builder.log_constraints = false
+POSE_GRAPH.constraint_builder.log_constraints = true
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
 
