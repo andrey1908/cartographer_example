@@ -33,8 +33,8 @@
     <arg name="sleep_ms" default="0" />
 
     <!-- Topics -->
-    <arg name="imu_topic" default="/xsens/imu/data" />
-    <arg name="point2_topic" default="/velodyne_points" />
+    <arg name="imu" default="/imu" />
+    <arg name="point2" default="/point2" />
 
     <!-- Cartographer offline -->
     <node ns="cartographer" pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" args="
@@ -50,8 +50,8 @@
             -sleep_ms_after_first_clock $(arg sleep_ms_after_first_clock)
             -sleep_ms $(arg sleep_ms)"
             output="screen">
-        <remap from="imu" to="$(arg imu_topic)" />
-        <remap from="points2" to="$(arg point2_topic)" />
+        <remap from="imu" to="$(arg imu)" />
+        <remap from="points2" to="$(arg point2)" />
     </node>
 
 </launch>

@@ -26,8 +26,8 @@
     <arg name="publish_occupancy_grid" default="true" />
 
     <!-- Topics -->
-    <arg name="imu_topic" default="/xsens/imu/data" />
-    <arg name="point2_topic" default="/velodyne_points" />
+    <arg name="imu" default="/imu" />
+    <arg name="point2" default="/point2" />
 
     <!-- Cartographer -->
     <node ns="cartographer" pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" args="
@@ -36,8 +36,8 @@
             -load_frozen_state=$(arg load_frozen_state)
             -save_state_filename $(arg save_state_filename)"
             output="screen">
-        <remap from="imu" to="$(arg imu_topic)" />
-        <remap from="points2" to="$(arg point2_topic)" />
+        <remap from="imu" to="$(arg imu)" />
+        <remap from="points2" to="$(arg point2)" />
     </node>
 
     <node if="$(arg publish_occupancy_grid)" ns="cartographer" pkg="cartographer_ros"
