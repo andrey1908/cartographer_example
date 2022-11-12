@@ -43,6 +43,8 @@ options = {
   fixed_frame_pose_sampling_ratio = 1.,
   imu_sampling_ratio = 1.,
   landmarks_sampling_ratio = 1.,
+  optimization_results_only_connected_trajectories = false,
+  optimization_results_only_recently_connected_trajectories = true,
 }
 
 MAP_BUILDER.use_trajectory_builder_3d = true
