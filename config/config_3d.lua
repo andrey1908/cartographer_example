@@ -45,6 +45,7 @@ options = {
   landmarks_sampling_ratio = 1.,
   optimization_results_only_connected_trajectories = false,
   optimization_results_only_recently_connected_trajectories = true,
+  log_trajectories_connection_time = true,
 }
 
 MAP_BUILDER.use_trajectory_builder_3d = true
