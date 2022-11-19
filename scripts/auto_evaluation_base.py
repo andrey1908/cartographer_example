@@ -1,6 +1,5 @@
 import os.path as osp
-from docker_helper import DockerContainer
-from ros_docker_helper import RosDockerContainer
+from docker_helper import RosDockerContainer
 
 
 class EvaluationOutputPathsHelper:
@@ -65,20 +64,20 @@ def prepare_poses_for_evaluation(ros_docker: RosDockerContainer, gt_rosbag_files
         max_union_intersection_time_difference, max_time_error, max_time_step)
     
     return_code = ros_docker.rosrun("ros_utils", "prepare_poses_for_evaluation.py", args,
-            source_files=osp.join(ros_docker.home_directory, 'ros_utils_ws/devel/setup.bash'))
+            source_files=osp.join(ros_docker.home_directory, 'ros_utils_ws/devel/setup.bash')).returncode
     if return_code != 0:
         return False
     return True
 
 
-def run_evaluation(docker: DockerContainer, output_paths_helper: EvaluationOutputPathsHelper, projection='xy'):
+def run_evaluation(ros_docker: RosDockerContainer, output_paths_helper: EvaluationOutputPathsHelper, projection='xy'):
     for subfolder in output_paths_helper.subfolders:
         args = ''
         args += '--dir_gt {} '.format(output_paths_helper.gt_poses_folder[subfolder])
         args += '--dir_result {} '.format(output_paths_helper.results_poses_folder[subfolder])
         args += '--dir_output {} '.format(output_paths_helper.output_metrics_folder[subfolder][projection])
         args += '--gt_format kitti --result_format kitti --projection {} '.format(projection)
-        evaluate_poses_script_file = osp.join(docker.home_directory, 'slam_validation/evaluate_poses.py')
-        return_code = docker.run_command("python3 {} {}".format(evaluate_poses_script_file, args))
+        evaluate_poses_script_file = osp.join(ros_docker.home_directory, 'slam_validation/evaluate_poses.py')
+        return_code = ros_docker.run("python3 {} {}".format(evaluate_poses_script_file, args)).returncode
         if return_code != 0:
             raise RuntimeError("Error on evaluation")

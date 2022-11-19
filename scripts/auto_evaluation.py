@@ -1,6 +1,6 @@
 import os
 import argparse
-from ros_docker_helper import RosDockerContainer
+from docker_helper import RosDockerContainer
 from cartographer import CartographerMounts, Cartographer
 from auto_evaluation_base import EvaluationOutputPathsHelper, prepare_poses_for_evaluation, run_evaluation
 
@@ -41,13 +41,13 @@ def auto_evaluation(test_rosbag_files, gt_topic, output_folder, config_file, gt_
 
     cartographer_mounts = CartographerMounts(files=[test_rosbag_files, gt_rosbag_files, config_file, transforms_source_file], folders=[output_folder])
     cartographer_docker = RosDockerContainer('cartographer:latest', 'cartographer_auto_evaluation')
-    cartographer_docker.create_containter(cartographer_mounts.volume_args)
+    cartographer_docker.create_containter(net='bridge', docker_mounts=cartographer_mounts)
     cartographer = Cartographer(cartographer_docker)
 
     output_paths_helper = EvaluationOutputPathsHelper(cartographer_mounts[output_folder], out_files_prefix)
 
     if not skip_running_cartographer:
-        cartographer_docker.run_command(f"rm -f {output_paths_helper.results_rosbag_file}")
+        cartographer_docker.run(f"rm -f {output_paths_helper.results_rosbag_file}")
 
         cartographer_docker.start_roscore()
         cartographer_docker.use_sim_time(True)
@@ -62,7 +62,7 @@ def auto_evaluation(test_rosbag_files, gt_topic, output_folder, config_file, gt_
             cartographer_docker.rosbag_play(cartographer_mounts[test_rosbag_files], '-d 1')
             cartographer.stop_cartographer()
 
-        cartographer_docker.run_command("rosnode kill /read_poses")
+        cartographer_docker.run("rosnode kill /read_poses")
         if transforms_source_file and transforms_source_file.endswith('.launch'):
             cartographer_docker.stop_session('publish_transforms')
         cartographer_docker.stop_roscore()

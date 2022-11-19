@@ -1,6 +1,5 @@
 import os.path as osp
-from docker_helper import DockerMounts
-from ros_docker_helper import RosDockerContainer
+from docker_helper import DockerMounts, RosDockerContainer
 
 
 class CartographerMounts(DockerMounts):
