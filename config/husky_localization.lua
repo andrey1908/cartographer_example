@@ -43,8 +43,8 @@ options = {
   fixed_frame_pose_sampling_ratio = 1.,
   imu_sampling_ratio = 1.,
   landmarks_sampling_ratio = 1.,
-  optimization_results_only_connected_trajectories = false,
-  optimization_results_only_recently_connected_trajectories = true,
+  optimization_results_only_connected_trajectories = true,
+  optimization_results_only_recently_connected_trajectories = false,
   log_trajectories_connection_time = true,
 }
 
@@ -116,6 +116,6 @@ TRAJECTORY_BUILDER.pure_localization_trimmer = {
 TRAJECTORY_BUILDER_3D.submaps.num_range_data = 30
 POSE_GRAPH.optimize_every_n_nodes = 20
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
-POSE_GRAPH.global_constraint_search_after_n_seconds = 10.
+POSE_GRAPH.global_constraint_search_after_n_seconds = 7.
 
 return options
