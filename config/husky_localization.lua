@@ -113,7 +113,7 @@ POSE_GRAPH.optimization_problem.log_solver_summary = false
 TRAJECTORY_BUILDER.pure_localization_trimmer = {
   max_submaps_to_keep = 2,
 }
-TRAJECTORY_BUILDER_3D.submaps.num_range_data = 50
+TRAJECTORY_BUILDER_3D.submaps.num_range_data = 30
 POSE_GRAPH.optimize_every_n_nodes = 20
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
 POSE_GRAPH.global_constraint_search_after_n_seconds = 10.
