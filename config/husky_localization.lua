@@ -67,9 +67,9 @@ TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.min_num_points = 200
 TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
 
 -- Motion filter --
-TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.15
-TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.1
-TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = 0.004
+TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.001
+TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.001
+TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = 0.001
 
 -- Submaps --
 TRAJECTORY_BUILDER_3D.submaps.num_range_data = 100
