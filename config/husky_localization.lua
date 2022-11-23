@@ -73,9 +73,9 @@ TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = 0.004
 
 -- Submaps --
 TRAJECTORY_BUILDER_3D.submaps.num_range_data = 100
-TRAJECTORY_BUILDER_3D.submaps.high_resolution = 0.1
+TRAJECTORY_BUILDER_3D.submaps.high_resolution = 0.2
 TRAJECTORY_BUILDER_3D.submaps.high_resolution_max_range = 20.
-TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.45
+TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.90
 
 -- Local SLAM --
 TRAJECTORY_BUILDER_3D.ceres_scan_matcher.translation_weight = 5.
