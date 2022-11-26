@@ -34,7 +34,7 @@
 
     <!-- Topics -->
     <arg name="imu" default="/imu" />
-    <arg name="point2" default="/point2" />
+    <arg name="point2" default="/velodyne_points" />
 
     <!-- Cartographer offline -->
     <node ns="cartographer" pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" args="

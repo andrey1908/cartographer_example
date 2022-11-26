@@ -89,9 +89,9 @@ POSE_GRAPH.optimize_every_n_nodes = 30
 POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.05
 POSE_GRAPH.constraint_builder.min_score = 0.55
-POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
 POSE_GRAPH.global_sampling_ratio = 0.01
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.5
+POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
 
 -- Optimization problem --
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
@@ -104,8 +104,17 @@ TRAJECTORY_BUILDER.log_data_frequency = false
 TRAJECTORY_BUILDER_3D.motion_filter.log_number_of_nodes_after_reduction = false
 POSE_GRAPH.log_work_queue_size = true
 POSE_GRAPH.log_residual_histograms = false
+POSE_GRAPH.log_number_of_trimmed_loops = true
 POSE_GRAPH.constraint_builder.log_constraints = true
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
+
+TRAJECTORY_BUILDER.loop_trimmer = {
+  trim_false_detected_loops = true,
+  max_translation_error_travelled_distance_ratio = 0.15,
+
+  trim_loops_in_window = true,
+  window_size_per_submap = 50,
+}
 
 return options
