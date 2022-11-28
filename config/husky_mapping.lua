@@ -67,12 +67,12 @@ TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.min_num_points = 200
 TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
 
 -- Motion filter --
-TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.15
-TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.1
-TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = 0.004
+TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.5
+TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.5
+TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = math.rad(20)
 
 -- Submaps --
-TRAJECTORY_BUILDER_3D.submaps.num_range_data = 100
+TRAJECTORY_BUILDER_3D.submaps.num_range_data = 30
 TRAJECTORY_BUILDER_3D.submaps.high_resolution = 0.1
 TRAJECTORY_BUILDER_3D.submaps.high_resolution_max_range = 20.
 TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.45
@@ -83,13 +83,13 @@ TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 10
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
-POSE_GRAPH.optimize_every_n_nodes = 30
+POSE_GRAPH.optimize_every_n_nodes = 10
 
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.05
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.2
 POSE_GRAPH.constraint_builder.min_score = 0.55
-POSE_GRAPH.global_sampling_ratio = 0.01
+POSE_GRAPH.global_sampling_ratio = 0.05
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.5
 POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
 
