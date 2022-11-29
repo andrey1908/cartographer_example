@@ -67,9 +67,9 @@ TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.min_num_points = 200
 TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
 
 -- Motion filter --
-TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.15
-TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.1
-TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = 0.004
+TRAJECTORY_BUILDER_3D.motion_filter.max_time_seconds = 0.01
+TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.01
+TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = math.rad(1)
 
 -- Submaps --
 TRAJECTORY_BUILDER_3D.submaps.num_range_data = 50
@@ -88,9 +88,9 @@ POSE_GRAPH.optimize_every_n_nodes = 20
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
-POSE_GRAPH.constraint_builder.min_score = 0.55
+POSE_GRAPH.constraint_builder.min_score = 0.40
 POSE_GRAPH.global_sampling_ratio = 0.01
-POSE_GRAPH.constraint_builder.global_localization_min_score = 0.5
+POSE_GRAPH.constraint_builder.global_localization_min_score = 0.40
 POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
 
 -- Optimization problem --
@@ -108,8 +108,6 @@ POSE_GRAPH.log_number_of_trimmed_loops = true
 POSE_GRAPH.constraint_builder.log_constraints = true
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
-
--- Localization mode --
 
 TRAJECTORY_BUILDER.pure_localization_trimmer = {
   max_submaps_to_keep = 2,

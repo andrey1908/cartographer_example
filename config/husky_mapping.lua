@@ -72,7 +72,7 @@ TRAJECTORY_BUILDER_3D.motion_filter.max_distance_meters = 0.5
 TRAJECTORY_BUILDER_3D.motion_filter.max_angle_radians = math.rad(20)
 
 -- Submaps --
-TRAJECTORY_BUILDER_3D.submaps.num_range_data = 50
+TRAJECTORY_BUILDER_3D.submaps.num_range_data = 40
 TRAJECTORY_BUILDER_3D.submaps.high_resolution = 0.1
 TRAJECTORY_BUILDER_3D.submaps.high_resolution_max_range = 20.
 TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.45
@@ -87,10 +87,10 @@ POSE_GRAPH.optimize_every_n_nodes = 10
 
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.2
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.15
 POSE_GRAPH.constraint_builder.min_score = 0.40
 POSE_GRAPH.global_sampling_ratio = 0.05
-POSE_GRAPH.constraint_builder.global_localization_min_score = 0.5
+POSE_GRAPH.constraint_builder.global_localization_min_score = 0.40
 POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
 
 -- Optimization problem --
@@ -114,7 +114,7 @@ TRAJECTORY_BUILDER.loop_trimmer = {
   max_translation_error_travelled_distance_ratio = 0.15,
 
   trim_loops_in_window = true,
-  window_size_per_submap = 50,
+  window_size_per_submap = 20,
 }
 
 return options
