@@ -87,7 +87,7 @@ POSE_GRAPH.optimize_every_n_nodes = 2
 
 -- Constraint builder --
 POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.2
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
 POSE_GRAPH.constraint_builder.min_score = 0.40
 POSE_GRAPH.global_sampling_ratio = 0.1
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.40
