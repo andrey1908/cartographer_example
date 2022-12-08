@@ -85,11 +85,11 @@ TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 10
 MAP_BUILDER.num_background_threads = 4
 POSE_GRAPH.optimize_every_n_nodes = 2
 
--- Constraint builder --
-POSE_GRAPH.constraint_builder.max_constraint_distance = 15.
-POSE_GRAPH.constraint_builder.sampling_ratio = 0.1
+-- Constraint search --
+POSE_GRAPH.max_local_constraint_distance = 15.
+POSE_GRAPH.local_constraints_per_node = 0.6
+POSE_GRAPH.global_constraints_per_node = 1
 POSE_GRAPH.constraint_builder.min_score = 0.40
-POSE_GRAPH.global_sampling_ratio = 0.1
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.40
 POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
 
