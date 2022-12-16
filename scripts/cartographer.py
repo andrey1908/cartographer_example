@@ -20,13 +20,21 @@ class Cartographer(RosDockerContainer):
         self.local_odometry_topic = '/cartographer/tracked_local_odometry'
         self.source_files = ['/home/docker_cartographer/catkin_ws/devel_isolated/setup.bash']
 
-    def create_containter(self, net='host', cartographer_mounts: CartographerMounts=None):
-        if cartographer_mounts is None:
-            cartographer_mounts = CartographerMounts()
-        super().create_containter(net=net, docker_mounts=cartographer_mounts)
+    def create_containter(self, docker_mounts: CartographerMounts=None, net='host'):
+        if docker_mounts is None:
+            docker_mounts = CartographerMounts()
+        super().create_containter(docker_mounts=docker_mounts, net=net)
 
-    def run_cartographer(self, config_filename, load_state_filename='""'):
+    def run_cartographer(self, config_filename,
+            load_state_filename=None, save_state_filename=None):
+        if load_state_filename is None:
+            load_state_filename = '""'
+        if save_state_filename is None:
+            save_state_filename = '""'
         result = self.roslaunch("cartographer_example", "cartographer.launch",
-            arguments=f"config_filename:={config_filename} load_state_filename:={load_state_filename}",
+            arguments=
+                f"config_filename:={config_filename} "
+                f"load_state_filename:={load_state_filename} "
+                f"save_state_filename:={save_state_filename} ",
             source_files=self.source_files)
         return result
