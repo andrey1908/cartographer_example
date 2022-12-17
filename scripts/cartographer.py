@@ -20,10 +20,10 @@ class Cartographer(RosDockerContainer):
         self.local_odometry_topic = '/cartographer/tracked_local_odometry'
         self.source_files = ['/home/docker_cartographer/catkin_ws/devel_isolated/setup.bash']
 
-    def create_containter(self, docker_mounts: CartographerMounts=None, net='host'):
-        if docker_mounts is None:
-            docker_mounts = CartographerMounts()
-        super().create_containter(docker_mounts=docker_mounts, net=net)
+    def create_containter(self, mounts: CartographerMounts=None, net='host'):
+        if mounts is None:
+            mounts = CartographerMounts()
+        super().create_containter(mounts=mounts, net=net)
 
     def run_cartographer(self, config_filename,
             load_state_filename=None, save_state_filename=None):
