@@ -93,8 +93,8 @@ POSE_GRAPH.optimization_problem.ceres_solver_options.num_threads = 4
 TRAJECTORY_BUILDER.log_data_frequency = false
 TRAJECTORY_BUILDER_2D.motion_filter.log_number_of_nodes_after_reduction = false
 POSE_GRAPH.log_work_queue_size = true
+POSE_GRAPH.log_constraints = true
 POSE_GRAPH.log_residual_histograms = false
-POSE_GRAPH.constraint_builder.log_constraints = true
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
 
