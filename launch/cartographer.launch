@@ -23,7 +23,7 @@
     <arg name="load_frozen_state" default="true" />
     <arg name="save_state_filename" default="''" />
 
-    <arg name="publish_occupancy_grid" default="true" />
+    <arg name="publish_occupancy_grid" default="false" />
 
     <!-- Topics -->
     <arg name="imu" default="/imu" />
