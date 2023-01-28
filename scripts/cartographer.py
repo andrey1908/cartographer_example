@@ -25,6 +25,10 @@ class Cartographer(RosDockerContainer):
             mounts = CartographerMounts()
         super().create_containter(mounts=mounts, net=net)
 
+    def build_cartographer(self):
+        result = self.run("cd ~/catkin_ws && catkin_make_isolated -DCMAKE_CXX_STANDARD=17 --use-ninja")
+        return result
+
     def run_cartographer(self, config_filename,
             load_state_filename=None, save_state_filename=None):
         if load_state_filename is None:
