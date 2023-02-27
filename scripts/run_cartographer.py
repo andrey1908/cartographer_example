@@ -2,7 +2,10 @@ import argparse
 import time
 import os
 import os.path as osp
-from .cartographer import Cartographer, CartographerMounts
+if __name__ == '__main__':
+    from cartographer import Cartographer, CartographerMounts
+else:
+    from .cartographer import Cartographer, CartographerMounts
 
 
 def build_parser():
@@ -79,3 +82,7 @@ def run_cartographer():
     os.makedirs(logs_folder, exist_ok=True)
     with open(osp.join(logs_folder, f"{time_str}.txt"), 'w') as f:
         f.write(results.stdout)
+
+
+if __name__ == '__main__':
+    run_cartographer()
