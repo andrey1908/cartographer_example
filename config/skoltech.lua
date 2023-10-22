@@ -126,7 +126,10 @@ POSE_GRAPH.optimization_problem.log_solver_summary = false
 
 TRAJECTORY_BUILDER.loop_trimmer = {
   trim_false_detected_loops = true,
-  max_translation_error_travelled_distance_ratio = 0.15,
+  rotation_error_rate = math.huge,
+  translation_to_rotation_error = math.huge,
+  translation_error_rate = 0.15,
+  rotation_to_translation_error_rate = 0,
 
   trim_loops_in_window = true,
   window_size_per_submap = 20,

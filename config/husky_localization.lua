@@ -115,7 +115,10 @@ TRAJECTORY_BUILDER.pure_localization_trimmer = {
 
 TRAJECTORY_BUILDER.loop_trimmer = {
   trim_false_detected_loops = true,
-  max_translation_error_travelled_distance_ratio = 0.15,
+  rotation_error_rate = 15 / 360,
+  translation_to_rotation_error = math.rad(1.5),
+  translation_error_rate = 0.1,
+  rotation_to_translation_error_rate = 0.015 / (2 * math.pi),
 
   trim_loops_in_window = false,
   window_size_per_submap = 0,
