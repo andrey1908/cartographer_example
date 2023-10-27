@@ -32,6 +32,8 @@
     <arg name="sleep_ms_after_first_clock" default="0" />
     <arg name="sleep_ms" default="0" />
 
+    <arg name="keep_running" default="true" />
+
     <!-- Topics -->
     <arg name="imu" default="/imu" />
     <arg name="point2" default="/velodyne_points" />
@@ -51,7 +53,8 @@
             -load_frozen_state=$(arg load_frozen_state)
             -save_state_filename $(arg save_state_filename)
             -sleep_ms_after_first_clock $(arg sleep_ms_after_first_clock)
-            -sleep_ms $(arg sleep_ms)"
+            -sleep_ms $(arg sleep_ms)
+            -keep_running=$(arg keep_running)"
             output="screen">
         <remap from="imu" to="$(arg imu)" />
         <remap from="points2" to="$(arg point2)" />
