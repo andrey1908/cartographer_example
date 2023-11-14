@@ -3,9 +3,9 @@ import time
 import os
 import os.path as osp
 if __name__ == '__main__':
-    from cartographer import Cartographer, CartographerMounts
+    from cartographer import Cartographer
 else:
-    from .cartographer import Cartographer, CartographerMounts
+    from .cartographer import Cartographer
 
 
 def build_parser():
@@ -33,7 +33,7 @@ def run_cartographer():
     args = parser.parse_args()
     check_arguments(args)
 
-    cartographer = Cartographer('cartographer:latest', 'cartographer')
+    cartographer = Cartographer()
     cartographer.create_containter()
 
     # build and exit
@@ -41,43 +41,19 @@ def run_cartographer():
         cartographer.build_cartographer()
         exit(0)
 
-    catkin_ws_folder = osp.abspath(osp.join(osp.dirname(__file__), "../../.."))
-    docker_catkin_ws_folder = "/home/docker_cartographer/catkin_ws"
     if args.localization:
-        config_filename = osp.join(docker_catkin_ws_folder,
-            "src/cartographer_example/config/husky_localization.lua")
+        config_file = osp.join(osp.dirname(__file__), "../config/husky_localization.lua")
     if args.mapping:
-        config_filename = osp.join(docker_catkin_ws_folder,
-            "src/cartographer_example/config/husky_mapping.lua")
+        config_file = osp.join(osp.dirname(__file__), "../config/husky_mapping.lua")
     if args.odometry:
-        config_filename = osp.join(docker_catkin_ws_folder,
-            "src/cartographer_example/config/husky_odometry.lua")
-
-    if args.load_map:
-        load_map_filename = osp.abspath(osp.expanduser(args.load_map))
-        if not load_map_filename.startswith(catkin_ws_folder + '/'):
-            raise RuntimeError(f"Load map file {args.load_map} should be in "
-                f"{catkin_ws_folder} folder")
-        load_state_filename = osp.join(docker_catkin_ws_folder,
-            osp.relpath(load_map_filename, catkin_ws_folder))
-    else:
-        load_state_filename = None
-
-    if args.save_map:
-        save_map_filename = osp.abspath(osp.expanduser(args.save_map))
-        if not save_map_filename.startswith(catkin_ws_folder + '/'):
-            raise RuntimeError(f"Save map file {args.save_map} should be in "
-                f"{catkin_ws_folder} folder")
-        save_state_filename = osp.join(docker_catkin_ws_folder,
-            osp.relpath(save_map_filename, catkin_ws_folder))
-    else:
-        save_state_filename = None
+        config_file = osp.join(osp.dirname(__file__), "../config/husky_odometry.lua")
 
     time_str = time.strftime("%Y-%m-%d_%H.%M.%S")
-    results = cartographer.run_cartographer(config_filename,
-        load_state_filename=load_state_filename,
-        save_state_filename=save_state_filename)
+    results = cartographer.run_cartographer(config_file,
+        load_state_file=args.load_map,
+        save_state_file=args.save_map)
 
+    catkin_ws_folder = osp.abspath(osp.join(osp.dirname(__file__), "../../.."))
     logs_folder = osp.abspath(osp.expanduser(osp.join(catkin_ws_folder, "cartographer_logs")))
     os.makedirs(logs_folder, exist_ok=True)
     with open(osp.join(logs_folder, f"{time_str}.txt"), 'w') as f:
