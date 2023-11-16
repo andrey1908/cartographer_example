@@ -24,10 +24,6 @@ class Cartographer(RosDockerContainer):
 
         super().create_containter(mounts=mounts, net=net)
 
-        self.run(f"echo 'export artd_COL_LOG_FOLDER=/home/docker_cartographer/catkin_ws/cartographer_logs' >> ~/.bashrc", quiet=True)
-        self.run(f"echo 'export displacement_COL_LOG_FOLDER=/home/docker_cartographer/catkin_ws/cartographer_logs' >> ~/.bashrc", quiet=True)
-        self.run(f"echo 'export trim_loops_COL_LOG_FOLDER=/home/docker_cartographer/catkin_ws/cartographer_logs' >> ~/.bashrc", quiet=True)
-
     def build_cartographer(self):
         result = self.run("cd ~/catkin_ws && catkin_make_isolated -DCMAKE_CXX_STANDARD=17 --use-ninja")
         return result
