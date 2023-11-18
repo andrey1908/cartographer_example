@@ -22,7 +22,7 @@ cd ~/cartographer_ws/src
 git clone http://github.com/andrey1908/cartographer
 git clone http://github.com/andrey1908/cartographer_ros
 git clone http://github.com/andrey1908/cartographer_example
-git clone http://github.com/andrey1908/kas_metrics
+git clone http://github.com/andrey1908/kas_utils
 git clone http://github.com/andrey1908/slam_communication_msgs
 ```
 
