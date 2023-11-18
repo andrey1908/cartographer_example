@@ -2,9 +2,9 @@ import argparse
 import time
 import os
 import os.path as osp
-if __name__ == '__main__':
+try:
     from cartographer import Cartographer
-else:
+except ImportError:
     from .cartographer import Cartographer
 
 
