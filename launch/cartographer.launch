@@ -27,7 +27,7 @@
 
     <!-- Topics -->
     <arg name="imu" default="/imu" />
-    <arg name="point2" default="/velodyne_points" />
+    <arg name="points2" default="/velodyne_points" />
 
     <!-- Cartographer -->
     <node ns="cartographer" pkg="cartographer_ros" type="cartographer_node" name="cartographer_node" args="
@@ -37,7 +37,7 @@
             -save_state_filename $(arg save_state_filename)"
             output="screen">
         <remap from="imu" to="$(arg imu)" />
-        <remap from="points2" to="$(arg point2)" />
+        <remap from="points2" to="$(arg points2)" />
     </node>
 
     <node if="$(arg publish_occupancy_grid)" ns="cartographer" pkg="cartographer_ros"

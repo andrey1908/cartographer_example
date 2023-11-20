@@ -36,10 +36,10 @@
 
     <!-- Topics -->
     <arg name="imu" default="/imu" />
-    <arg name="point2" default="/velodyne_points" />
-    <arg name="point2_1" default="/point2_1" />
-    <arg name="point2_2" default="/point2_2" />
-    <arg name="point2_3" default="/point2_3" />
+    <arg name="points2" default="/velodyne_points" />
+    <arg name="points2_1" default="/points2_1" />
+    <arg name="points2_2" default="/points2_2" />
+    <arg name="points2_3" default="/points2_3" />
 
     <!-- Cartographer offline -->
     <node ns="cartographer" pkg="cartographer_ros" type="cartographer_offline_node" name="cartographer_offline_node" args="
@@ -57,10 +57,10 @@
             -keep_running=$(arg keep_running)"
             output="screen">
         <remap from="imu" to="$(arg imu)" />
-        <remap from="points2" to="$(arg point2)" />
-        <remap from="points2_1" to="$(arg point2_1)" />
-        <remap from="points2_2" to="$(arg point2_2)" />
-        <remap from="points2_3" to="$(arg point2_3)" />
+        <remap from="points2" to="$(arg points2)" />
+        <remap from="points2_1" to="$(arg points2_1)" />
+        <remap from="points2_2" to="$(arg points2_2)" />
+        <remap from="points2_3" to="$(arg points2_3)" />
     </node>
 
 </launch>
