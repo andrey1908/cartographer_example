@@ -10,10 +10,7 @@ except ImportError:
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    mode = parser.add_mutually_exclusive_group()
-    mode.add_argument('-l', '--localization', action='store_true')
-    mode.add_argument('-m', '--mapping', action='store_true')
-    mode.add_argument('-o', '--odometry', action='store_true')
+    parser.add_argument('--config-file', type=str, required=True)
     parser.add_argument('--load-map', type=str)
     parser.add_argument('--save-map', type=str)
 
@@ -21,17 +18,9 @@ def build_parser():
     return parser
 
 
-def check_arguments(args):
-    if args.build:
-        return
-    if not args.localization and not args.mapping and not args.odometry:
-        raise RuntimeError("Specify cartographer running mode")
-
-
 def run_cartographer():
     parser = build_parser()
     args = parser.parse_args()
-    check_arguments(args)
 
     cartographer = Cartographer()
     cartographer.create_containter()
@@ -41,13 +30,6 @@ def run_cartographer():
         cartographer.build_cartographer()
         exit(0)
 
-    if args.localization:
-        config_file = osp.join(osp.dirname(__file__), "../config/husky_localization.lua")
-    if args.mapping:
-        config_file = osp.join(osp.dirname(__file__), "../config/husky_mapping.lua")
-    if args.odometry:
-        config_file = osp.join(osp.dirname(__file__), "../config/husky_odometry.lua")
-
     catkin_ws_folder = osp.abspath(osp.join(osp.dirname(__file__), "../../.."))
     logs_folder = osp.abspath(osp.expanduser(osp.join(catkin_ws_folder, "cartographer_logs")))
     cartographer.set_environment_variable("artd_COL_LOG_FOLDER", cartographer.resolve(logs_folder))
@@ -55,7 +37,7 @@ def run_cartographer():
     cartographer.set_environment_variable("trim_loops_COL_LOG_FOLDER", cartographer.resolve(logs_folder))
 
     time_str = time.strftime("%Y-%m-%d_%H.%M.%S")
-    results = cartographer.run_cartographer(config_file,
+    results = cartographer.run_cartographer(args.config_file,
         load_state_file=args.load_map,
         save_state_file=args.save_map)
 
