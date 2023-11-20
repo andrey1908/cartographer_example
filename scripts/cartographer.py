@@ -28,8 +28,8 @@ class Cartographer(RosDockerContainer):
         result = self.run("cd ~/catkin_ws && catkin_make_isolated -DCMAKE_CXX_STANDARD=17 --use-ninja")
         return result
 
-    def run_cartographer(self, config_file,
-            load_state_file=None, save_state_file=None):
+    def run_cartographer(self, config_file, *args,
+            load_state_file=None, save_state_file=None, **kwargs):
         arguments = str()
 
         config_file = self.resolve(config_file)
@@ -42,6 +42,11 @@ class Cartographer(RosDockerContainer):
         if save_state_file is not None:
             save_state_file = self.resolve(save_state_file)
             arguments += f"save_state_filename:={save_state_file} "
+
+        for arg in args:
+            arguments += f"{arg} "
+        for key, value in kwargs.items():
+            arguments += f"{key}:={value} "
 
         result = self.roslaunch("cartographer_example", "cartographer.launch",
             arguments=arguments, source_files=self.source_files)

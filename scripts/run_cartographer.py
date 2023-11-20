@@ -15,12 +15,14 @@ def build_parser():
     parser.add_argument('--save-map', type=str)
 
     parser.add_argument('--build', action='store_true')
+
+    parser.add_argument('-args', '--args', action='store_true')  # workaround to pass args
     return parser
 
 
 def run_cartographer():
     parser = build_parser()
-    args = parser.parse_args()
+    args, unknown_args = parser.parse_known_args()
 
     cartographer = Cartographer()
     cartographer.create_containter()
@@ -39,7 +41,7 @@ def run_cartographer():
     time_str = time.strftime("%Y-%m-%d_%H.%M.%S")
     results = cartographer.run_cartographer(args.config_file,
         load_state_file=args.load_map,
-        save_state_file=args.save_map)
+        save_state_file=args.save_map, *unknown_args)
 
     os.makedirs(logs_folder, exist_ok=True)
     with open(osp.join(logs_folder, f"{time_str}.txt"), 'w') as f:
