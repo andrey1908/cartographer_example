@@ -92,7 +92,7 @@ POSE_GRAPH.local_constraints_per_node = 0.1
 POSE_GRAPH.global_constraints_per_node = 1
 POSE_GRAPH.constraint_builder.min_score = 0.3
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.40
-POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
+POSE_GRAPH.global_constraint_search_after_n_seconds = -1.
 
 POSE_GRAPH.constraint_builder.fast_correlative_scan_matcher_3d.min_rotational_score = 0.4
 POSE_GRAPH.constraint_builder.fast_correlative_scan_matcher_3d.min_low_resolution_score = 0.3

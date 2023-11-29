@@ -91,7 +91,7 @@ POSE_GRAPH.local_constraints_per_node = 0.6
 POSE_GRAPH.global_constraints_per_node = 0.6
 POSE_GRAPH.constraint_builder.min_score = 0.40
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.40
-POSE_GRAPH.global_constraint_search_after_n_seconds = 0.
+POSE_GRAPH.global_constraint_search_after_n_seconds = -1.
 
 -- Optimization problem --
 POSE_GRAPH.optimization_problem.huber_scale = 5e2
