@@ -10,7 +10,7 @@ except ImportError:
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config-file', type=str, required=True)
+    parser.add_argument('--config-file', type=str)
     parser.add_argument('--load-map', type=str)
     parser.add_argument('--save-map', type=str)
 
@@ -31,6 +31,9 @@ def run_cartographer():
     if args.build:
         cartographer.build_cartographer()
         exit(0)
+
+    if not args.config_file:
+        raise RuntimeError("Specify config file.")
 
     catkin_ws_folder = osp.abspath(osp.join(osp.dirname(__file__), "../../.."))
     logs_folder = osp.abspath(osp.expanduser(osp.join(catkin_ws_folder, "cartographer_logs")))
