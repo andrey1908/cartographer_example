@@ -122,6 +122,8 @@ POSE_GRAPH.log_number_of_trimmed_loops = true
 POSE_GRAPH.constraint_builder.log_matches = false
 POSE_GRAPH.optimization_problem.log_solver_summary = false
 
+TRAJECTORY_BUILDER_3D.artd_noise_smoothing_factor = 1
+
 TRAJECTORY_BUILDER.loop_trimmer = {
   trim_false_detected_loops = true,
   rotation_error_rate = 10 / 360,
