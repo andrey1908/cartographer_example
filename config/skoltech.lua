@@ -131,8 +131,8 @@ TRAJECTORY_BUILDER.loop_trimmer = {
   translation_error_rate = 0.15,
   rotation_to_translation_error_rate = 0,
 
-  trim_loops_in_window = true,
-  window_size_per_submap = 20,
+  trim_close_loops = true,
+  min_distance_in_nodes = 20,
 }
 
 return options
