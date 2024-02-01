@@ -80,7 +80,7 @@ TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.45
 
 -- Local SLAM --
 TRAJECTORY_BUILDER_3D.ceres_scan_matcher.translation_weight = 5
-TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 10
+TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 10.
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
