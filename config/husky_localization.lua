@@ -51,6 +51,7 @@ options = {
 MAP_BUILDER.use_trajectory_builder_3d = true
 TRAJECTORY_BUILDER_3D.use_imu_data = false
 TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 1
+TRAJECTORY_BUILDER.use_global_odometry = true
 
 -- Range filter --
 TRAJECTORY_BUILDER_3D.min_range = 1.
@@ -60,10 +61,10 @@ TRAJECTORY_BUILDER_3D.max_range = MAX_3D_RANGE
 -- Voxel filter --
 TRAJECTORY_BUILDER_3D.voxel_filter_size = 0.15
 TRAJECTORY_BUILDER_3D.high_resolution_adaptive_voxel_filter.max_length = 2.
-TRAJECTORY_BUILDER_3D.high_resolution_adaptive_voxel_filter.min_num_points = 150
+TRAJECTORY_BUILDER_3D.high_resolution_adaptive_voxel_filter.min_num_points = 500
 TRAJECTORY_BUILDER_3D.high_resolution_adaptive_voxel_filter.max_range = 15.
 TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_length = 4.
-TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.min_num_points = 200
+TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.min_num_points = 800
 TRAJECTORY_BUILDER_3D.low_resolution_adaptive_voxel_filter.max_range = MAX_3D_RANGE
 
 -- Motion filter --
@@ -78,8 +79,8 @@ TRAJECTORY_BUILDER_3D.submaps.high_resolution_max_range = 20.
 TRAJECTORY_BUILDER_3D.submaps.low_resolution = 0.45
 
 -- Local SLAM --
-TRAJECTORY_BUILDER_3D.ceres_scan_matcher.translation_weight = 5.
-TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 10.
+TRAJECTORY_BUILDER_3D.ceres_scan_matcher.translation_weight = 3.
+TRAJECTORY_BUILDER_3D.ceres_scan_matcher.rotation_weight = 1.
 
 -- Global SLAM --
 MAP_BUILDER.num_background_threads = 4
